@@ -101,8 +101,9 @@ if [[ ! -r "$preview_source" ]]; then
   exit 1
 fi
 server_arg=$(/usr/bin/gzip -9c "$preview_source" | /usr/bin/base64 | /usr/bin/tr -d '\r\n')
-remote_command="exec python3 -u -c 'import base64,gzip,sys; exec(compile(gzip.decompress(base64.b64decode(sys.argv.pop(1))), \"<codex-preview>\", \"exec\"))' '$server_arg' '$socket_path' '$directory_arg' '$ssh_host' '$ssh_port'"
-if (( ${#remote_command} >= 131000 )); then
+# Stream the worker to avoid the remote shell's command argument limit.
+remote_command="exec python3 -u -c 'import base64,gzip,sys; exec(compile(gzip.decompress(base64.b64decode(sys.stdin.buffer.readline(2097152).strip(), validate=True)), \"<server-files>\", \"exec\"))' '$socket_path' '$directory_arg' '$ssh_host' '$ssh_port'"
+if (( ${#remote_command} >= 131000 || ${#server_arg} >= 2097152 )); then
   printf 'Server Files: the bundled preview worker exceeds the SSH command size limit.\n' >&2
   exit 1
 fi
@@ -122,6 +123,7 @@ ssh_options=(
   -l "$ssh_user"
   -p "$ssh_port"
   -o "StrictHostKeyChecking=$strict_host_key"
+  -o StdinNull=no
   -o ExitOnForwardFailure=yes
   -o ConnectTimeout=12
   -o ServerAliveInterval=15
@@ -170,4 +172,16 @@ elif [[ "${CODEX_PREVIEW_AUTH:-}" == password ]]; then
 elif [[ "${CODEX_PREVIEW_BATCH:-0}" == 1 ]]; then
   ssh_options+=(-o BatchMode=yes -o UseKeychain=yes -o AddKeysToAgent=yes)
 fi
-exec /usr/bin/ssh "${ssh_options[@]}" -- "$ssh_hostname" "$remote_command"
+send_preview_source() {
+  printf '%s\n' "$server_arg"
+  if [[ ! -t 0 ]]; then
+    # The app closes its input pipe when the user disconnects.
+    exec /bin/cat
+  fi
+  # In a terminal, OpenSSH owns keyboard input. Keep the worker's pipe open
+  # until the launcher (now the SSH process) exits.
+  while kill -0 "$$" 2>/dev/null; do
+    /bin/sleep 1
+  done
+}
+exec /usr/bin/ssh "${ssh_options[@]}" -- "$ssh_hostname" "$remote_command" < <(send_preview_source)

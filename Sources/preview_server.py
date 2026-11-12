@@ -25,7 +25,7 @@ import subprocess
 import sys
 import tempfile
 import threading
-from time import monotonic
+from time import monotonic, time
 from typing import NamedTuple
 from urllib.parse import parse_qs, quote_from_bytes, unquote, urlencode, urlsplit
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -69,6 +69,15 @@ UI_TRANSLATIONS = {
     "伺服器的檔案系統不支援安全移動": "The server file system does not support safe moves.",
     "伺服器路徑": "Server path",
     "位元組": "bytes",
+    "帳號儲存配額": "Account quota",
+    "共用檔案系統": "Shared filesystem",
+    "空間充足": "Enough space",
+    "空間將滿": "Low space",
+    "沒有可用空間": "No space left",
+    "可用": "available",
+    "總容量": "Total",
+    "容量使用率": "Storage used",
+    "已使用 {percent}%": "{percent}% used",
     "例如 analysis.py": "For example, analysis.py",
     "修改日期": "Date modified",
     "修改時間未知": "Unknown modification date",
@@ -141,7 +150,7 @@ UI_TRANSLATIONS = {
     "拖到 Finder 下載": "Drag to Finder to download",
     "拖到資料夾移動": "Drag onto a folder to move",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "Drop files or folders here or onto a folder below",
-    "拖曳調整預覽大小，雙擊還原": "Drag to resize. Double-click to reset.",
+    "拖曳調整大小，雙擊還原": "Drag to resize. Double-click to reset.",
     "搜尋": "Search",
     "搜尋中": "Searching",
     "搜尋中 ·": "Searching ·",
@@ -240,7 +249,7 @@ UI_TRANSLATIONS = {
     "略過": "Skip",
     "白色背景": "Light appearance",
     "的標籤": "tags",
-    "目前只支援編輯 .py、.md 和 .txt 檔案": "Only .py, .md, and .txt files can be edited",
+    "目前只支援編輯 .py、.md、.txt 和 .json 檔案": "Only .py, .md, .txt, and .json files can be edited",
     "目前連線的伺服器已變更，請重新整理頁面。": "The connected server changed. Refresh this page.",
     "目標資料夾不存在或無法開啟": "The destination folder is missing or cannot be opened",
     "目標資料夾無法建立": "Could not create the destination folder",
@@ -268,6 +277,7 @@ UI_TRANSLATIONS = {
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "Close the editor and discard unsaved changes?",
     "設定": "Settings",
     "調整預覽大小": "Resize preview",
+    "調整編輯視窗大小": "Resize editor",
     "請一次執行一個檔案操作": "Run one file operation at a time",
     "請從「伺服器檔案」頁操作": "Run this action from Server Files",
     "請手動複製這個伺服器路徑": "Copy this server path manually",
@@ -350,6 +360,15 @@ UI_TRANSLATIONS = {
     "伺服器的檔案系統不支援安全移動": "サーバーのファイルシステムは安全な移動をサポートしていません。",
     "伺服器路徑": "サーバーパス",
     "位元組": "バイト",
+    "帳號儲存配額": "アカウント容量制限",
+    "共用檔案系統": "共有ファイルシステム",
+    "空間充足": "空き容量は十分",
+    "空間將滿": "空き容量が少ない",
+    "沒有可用空間": "空き容量なし",
+    "可用": "空き",
+    "總容量": "合計",
+    "容量使用率": "容量使用率",
+    "已使用 {percent}%": "使用率 {percent}%",
     "例如 analysis.py": "例：analysis.py",
     "修改日期": "更新日",
     "修改時間未知": "更新日時は不明",
@@ -422,7 +441,7 @@ UI_TRANSLATIONS = {
     "拖到 Finder 下載": "Finder にドラッグしてダウンロード",
     "拖到資料夾移動": "フォルダにドラッグして移動",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "ここか下のフォルダにファイルやフォルダをドロップ",
-    "拖曳調整預覽大小，雙擊還原": "ドラッグしてサイズを調整、ダブルクリックして元に戻す",
+    "拖曳調整大小，雙擊還原": "ドラッグしてサイズを調整、ダブルクリックして元に戻す",
     "搜尋": "検索",
     "搜尋中": "検索中",
     "搜尋中 ·": "検索中 ·",
@@ -521,7 +540,7 @@ UI_TRANSLATIONS = {
     "略過": "スキップ",
     "白色背景": "ライト",
     "的標籤": "のタグ",
-    "目前只支援編輯 .py、.md 和 .txt 檔案": ".py、.md、.txt のファイルのみ編集できます",
+    "目前只支援編輯 .py、.md、.txt 和 .json 檔案": ".py、.md、.txt、.json のファイルのみ編集できます",
     "目前連線的伺服器已變更，請重新整理頁面。": "接続先のサーバーが変わりました。このページを更新してください。",
     "目標資料夾不存在或無法開啟": "保存先フォルダが存在しないか、開けません",
     "目標資料夾無法建立": "保存先フォルダを作成できませんでした",
@@ -549,6 +568,7 @@ UI_TRANSLATIONS = {
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "エディタを閉じて未保存の変更を破棄しますか？",
     "設定": "設定",
     "調整預覽大小": "プレビューのサイズを調整",
+    "調整編輯視窗大小": "エディターのサイズを調整",
     "請一次執行一個檔案操作": "ファイル操作は 1 回に 1 つ実行してください",
     "請從「伺服器檔案」頁操作": "サーバーファイルのページから操作してください",
     "請手動複製這個伺服器路徑": "このサーバー上のパスを手動でコピーしてください",
@@ -631,6 +651,15 @@ UI_TRANSLATIONS = {
     "伺服器的檔案系統不支援安全移動": "서버의 파일 시스템에서 안전한 이동을 지원하지 않습니다.",
     "伺服器路徑": "서버 경로",
     "位元組": "바이트",
+    "帳號儲存配額": "계정 저장 공간 한도",
+    "共用檔案系統": "공유 파일 시스템",
+    "空間充足": "공간 충분",
+    "空間將滿": "공간 부족",
+    "沒有可用空間": "사용 가능 공간 없음",
+    "可用": "사용 가능",
+    "總容量": "전체",
+    "容量使用率": "저장 공간 사용률",
+    "已使用 {percent}%": "사용률 {percent}%",
     "例如 analysis.py": "예: analysis.py",
     "修改日期": "수정 날짜",
     "修改時間未知": "수정 날짜 알 수 없음",
@@ -703,7 +732,7 @@ UI_TRANSLATIONS = {
     "拖到 Finder 下載": "Finder로 드래그하여 다운로드",
     "拖到資料夾移動": "폴더로 드래그하여 이동",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "여기 또는 아래 폴더로 파일이나 폴더를 끌어오세요",
-    "拖曳調整預覽大小，雙擊還原": "드래그하여 크기 조절, 두 번 클릭하여 초기화",
+    "拖曳調整大小，雙擊還原": "드래그하여 크기 조절, 두 번 클릭하여 초기화",
     "搜尋": "검색",
     "搜尋中": "검색 중",
     "搜尋中 ·": "검색 중 ·",
@@ -802,7 +831,7 @@ UI_TRANSLATIONS = {
     "略過": "건너뛰기",
     "白色背景": "밝은 테마",
     "的標籤": "태그",
-    "目前只支援編輯 .py、.md 和 .txt 檔案": ".py, .md, .txt 파일만 편집할 수 있습니다",
+    "目前只支援編輯 .py、.md、.txt 和 .json 檔案": ".py, .md, .txt, .json 파일만 편집할 수 있습니다",
     "目前連線的伺服器已變更，請重新整理頁面。": "연결된 서버가 변경되었습니다. 이 페이지를 새로 고침하세요.",
     "目標資料夾不存在或無法開啟": "대상 폴더가 없거나 열 수 없습니다",
     "目標資料夾無法建立": "대상 폴더를 만들 수 없습니다",
@@ -830,6 +859,7 @@ UI_TRANSLATIONS = {
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "편집기를 닫고 저장하지 않은 변경 사항을 버릴까요?",
     "設定": "설정",
     "調整預覽大小": "미리보기 크기 조절",
+    "調整編輯視窗大小": "편집기 크기 조절",
     "請一次執行一個檔案操作": "파일 작업은 한 번에 하나씩 실행하세요",
     "請從「伺服器檔案」頁操作": "서버 파일 페이지에서 실행하세요",
     "請手動複製這個伺服器路徑": "이 서버 경로를 직접 복사하세요",
@@ -912,6 +942,15 @@ UI_TRANSLATIONS = {
     "伺服器的檔案系統不支援安全移動": "服务器的文件系统不支持安全移动。",
     "伺服器路徑": "服务器路径",
     "位元組": "字节",
+    "帳號儲存配額": "账户存储配额",
+    "共用檔案系統": "共享文件系统",
+    "空間充足": "空间充足",
+    "空間將滿": "空间将满",
+    "沒有可用空間": "没有可用空间",
+    "可用": "可用",
+    "總容量": "总容量",
+    "容量使用率": "容量使用率",
+    "已使用 {percent}%": "已使用 {percent}%",
     "例如 analysis.py": "例如 analysis.py",
     "修改日期": "修改日期",
     "修改時間未知": "修改时间未知",
@@ -984,7 +1023,7 @@ UI_TRANSLATIONS = {
     "拖到 Finder 下載": "拖到 Finder 下载",
     "拖到資料夾移動": "拖到文件夹移动",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "将文件或文件夹拖到这里，也可拖到下方文件夹",
-    "拖曳調整預覽大小，雙擊還原": "拖动调整预览大小，双击还原",
+    "拖曳調整大小，雙擊還原": "拖动调整大小，双击还原",
     "搜尋": "搜索",
     "搜尋中": "搜索中",
     "搜尋中 ·": "搜索中 ·",
@@ -1083,7 +1122,7 @@ UI_TRANSLATIONS = {
     "略過": "跳过",
     "白色背景": "浅色背景",
     "的標籤": "的标签",
-    "目前只支援編輯 .py、.md 和 .txt 檔案": "目前仅支持编辑 .py、.md 和 .txt 文件",
+    "目前只支援編輯 .py、.md、.txt 和 .json 檔案": "目前仅支持编辑 .py、.md、.txt 和 .json 文件",
     "目前連線的伺服器已變更，請重新整理頁面。": "当前连接的服务器已变更，请刷新页面。",
     "目標資料夾不存在或無法開啟": "目标文件夹不存在或无法打开",
     "目標資料夾無法建立": "无法创建目标文件夹",
@@ -1111,6 +1150,7 @@ UI_TRANSLATIONS = {
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "要关闭编辑器并放弃尚未保存的更改吗？",
     "設定": "设置",
     "調整預覽大小": "调整预览大小",
+    "調整編輯視窗大小": "调整编辑窗口大小",
     "請一次執行一個檔案操作": "请每次执行一个文件操作",
     "請從「伺服器檔案」頁操作": "请从“服务器文件”页面操作",
     "請手動複製這個伺服器路徑": "请手动复制此服务器路径",
@@ -1208,7 +1248,7 @@ CONTENT_SEARCH_CHUNK = 64 * 1024
 CONTENT_SEARCH_BINARY_BYTES = re.compile(rb"[\x00-\x08\x0b\x0e-\x1f\x7f]")
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024
 MAX_EDITOR_BYTES = 2 * 1024 * 1024
-EDITABLE_SUFFIXES = {".py", ".md", ".txt"}
+EDITABLE_SUFFIXES = {".py", ".md", ".txt", ".json"}
 EDITOR_TEMP_PREFIX = ".preview-save-"
 TRASH_DIRECTORY = ".codex-preview-trash"
 FILE_TAGS = ("red", "green", "blue")
@@ -1282,6 +1322,7 @@ SOURCE_PREVIEW_LANGUAGES = {
     ".js": "javascript", ".mjs": "javascript", ".cjs": "javascript", ".jsx": "javascript",
     ".ts": "javascript", ".tsx": "javascript",
     ".md": "markdown", ".markdown": "markdown",
+    ".json": "json",
 }
 CONTENT_SEARCH_SUFFIXES = TEXT_PREVIEW_TYPES | set(SOURCE_PREVIEW_LANGUAGES) | {
     ".adoc", ".c", ".cc", ".cfg", ".cmake", ".conf", ".cpp", ".cs", ".css", ".cxx", ".go",
@@ -1468,6 +1509,7 @@ FILE_THEME_STYLE = """
     --theme-selection: #a0a0a04d;
     --theme-code-comment: #a5b39a;
     --theme-code-keyword: #d7acd9;
+    --theme-code-literal: #84b9e8;
     --theme-code-string: #e1ae96;
     --theme-code-number: #c0cda8;
     --theme-code-name: #9bd0e3;
@@ -1497,6 +1539,7 @@ FILE_THEME_STYLE = """
     --theme-selection: #66666644;
     --theme-code-comment: #4f6943;
     --theme-code-keyword: #774379;
+    --theme-code-literal: #384a88;
     --theme-code-string: #953e24;
     --theme-code-number: #58631e;
     --theme-code-name: #215f7c;
@@ -1652,9 +1695,11 @@ FILE_THEME_STYLE = """
   }
   .syntax-comment, .syntax-quote { color: var(--theme-code-comment); }
   .syntax-keyword { color: var(--theme-code-keyword); }
+  .syntax-literal { color: var(--theme-code-literal); }
   .syntax-string, .syntax-code, .syntax-fence { color: var(--theme-code-string); }
   .syntax-number { color: var(--theme-code-number); }
-  .syntax-variable, .syntax-heading, .syntax-link { color: var(--theme-code-name); }
+  .syntax-variable, .syntax-heading, .syntax-link, .syntax-property { color: var(--theme-code-name); }
+  .syntax-punctuation { color: var(--theme-muted); }
   .syntax-call, .syntax-emphasis { color: var(--theme-code-call); }
   .editor-header, .editor-footer {
     background: var(--theme-surface-raised);
@@ -1693,6 +1738,53 @@ PAGE_STYLE = """
   form { display: flex; gap: 8px; align-items: stretch; max-width: 650px; }
   .hero form { max-width: 660px; min-width: 0; padding: 4px; gap: 4px; border: 1px solid #d7e5f8; border-radius: 13px; background: #fbfdff; box-shadow: 0 8px 22px #08162835; }
   .hero form:focus-within { border-color: #8cbdff; box-shadow: 0 0 0 3px #8cbdff59, 0 8px 22px #08162835; }
+  .hero-tools:has(> .storage-status) {
+    display: grid; grid-template-columns: minmax(0, 660px) minmax(235px, 290px);
+    align-items: center; justify-content: space-between; gap: 20px;
+  }
+  .storage-status {
+    --storage-accent: #84c5ae;
+    min-width: 0; padding: 9px 13px 8px; border: 1px solid var(--theme-border);
+    border-radius: 11px; background: var(--theme-surface); color: var(--theme-text);
+    box-shadow: 0 6px 18px var(--theme-shadow);
+  }
+  .storage-status[data-storage-state="low"] { --storage-accent: #f3bc75; }
+  .storage-status[data-storage-state="full"] { --storage-accent: #f49399; }
+  html[data-theme="light"] .storage-status { --storage-accent: #21634f; }
+  html[data-theme="light"] .storage-status[data-storage-state="low"] { --storage-accent: #8c5518; }
+  html[data-theme="light"] .storage-status[data-storage-state="full"] { --storage-accent: #a83142; }
+  .storage-heading, .storage-values {
+    display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 3px 8px;
+  }
+  .storage-heading h2 { font-size: 12px; line-height: 1.3; }
+  .storage-state {
+    display: inline-flex; align-items: center; gap: 5px; color: var(--storage-accent);
+    font-size: 11px; font-weight: 650; line-height: 1.35;
+  }
+  .storage-state::before {
+    content: ""; flex: 0 0 6px; height: 6px; border: 1px solid currentColor;
+    border-radius: 50%; background: currentColor;
+  }
+  .storage-values { margin-block: 5px 3px; color: var(--theme-muted); font-size: 11px; }
+  .storage-values p { margin: 0; }
+  .storage-values strong { color: var(--theme-text); font-variant-numeric: tabular-nums; }
+  .storage-available strong { font-size: 21px; font-weight: 680; line-height: 1.15; letter-spacing: -.02em; }
+  .storage-gauge { display: flex; align-items: center; gap: 7px; color: var(--theme-muted); font-size: 10px; }
+  .storage-gauge span { flex: 0 0 auto; min-width: 4ch; text-align: end; font-variant-numeric: tabular-nums; }
+  .storage-gauge meter {
+    appearance: none; -webkit-appearance: none; flex: 1; min-width: 0; height: 5px;
+    overflow: hidden; border: 0; border-radius: 99px; background: var(--theme-selected);
+  }
+  .storage-gauge meter::-webkit-meter-bar { height: 5px; border: 0; background: var(--theme-selected); }
+  .storage-gauge meter::-webkit-meter-optimum-value { background: var(--storage-accent); }
+  .storage-gauge meter::-moz-meter-bar { background: var(--storage-accent); }
+  @media (max-width: 790px) {
+    .hero-tools:has(> .storage-status) { grid-template-columns: minmax(0, 660px); gap: 10px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes storage-arrive { from { opacity: .72; transform: translateY(3px); } }
+    .storage-status:not([data-storage-steady]) { animation: storage-arrive 210ms var(--ease); }
+  }
   .search-box { min-width: 0; flex: 1; display: flex; align-items: center; gap: 13px; padding: 0 11px; color: #486282; }
   .magnifier { width: 13px; height: 13px; flex: 0 0 13px; border: 2px solid currentColor; border-radius: 50%; position: relative; }
   .magnifier::after { content: ""; width: 6px; height: 2px; background: currentColor; position: absolute; right: -5px; bottom: -2px; transform: rotate(45deg); }
@@ -1710,6 +1802,25 @@ PAGE_STYLE = """
   .location a:hover { border-color: #b8cce6; background: #eaf3ff; }
   .list-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 11px; }
   .list-title h2 { min-width: 0; overflow-wrap: anywhere; }
+  .list-heading { flex: 1; min-width: 0; }
+  .search-heading:empty { display: none; }
+  .search-heading:not(:empty) { margin-block-end: 4px; }
+  .folder-breadcrumb ol {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 3px 5px;
+    margin: 0; padding: 0; list-style: none;
+  }
+  .folder-breadcrumb li { display: flex; align-items: center; gap: 5px; min-width: 0; max-width: 100%; }
+  .folder-breadcrumb a, .folder-breadcrumb [aria-current="page"] { min-width: 0; overflow-wrap: anywhere; }
+  .folder-breadcrumb a {
+    padding: 3px 4px; border-radius: 5px; color: var(--theme-muted);
+    font-size: 13px; font-weight: 600; text-decoration: none;
+  }
+  .folder-breadcrumb a:is(:hover, :focus-visible) {
+    background: var(--theme-hover); color: var(--theme-text); text-decoration: underline;
+  }
+  .folder-breadcrumb-separator { flex: none; color: var(--theme-muted); font-size: 15px; }
+  .folder-breadcrumb [aria-current="page"] { color: var(--theme-text); font-size: 17px; font-weight: 690; }
+  .search-heading:not(:empty) + .folder-breadcrumb [aria-current="page"] { font-size: 13px; }
   h2 { font-size: 17px; margin: 0; }
   .count { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--quiet); margin: 0; }
   #preview-results[aria-busy="true"] .count::before { content: ""; flex: 0 0 11px; height: 11px; border: 1.5px solid #c0cee1; border-top-color: #3a70a7; border-radius: 50%; }
@@ -1728,8 +1839,15 @@ PAGE_STYLE = """
   [data-upload-target].drag-over { outline: 2px solid #3f82cc; outline-offset: -2px; background: #dfedff; }
   .item { flex: 1; min-width: 0; display: flex; align-items: center; gap: 13px; min-height: 65px; padding: 10px 8px 10px 16px; text-decoration: none; }
   .item:focus-visible { outline-offset: -3px; }
-  button.item { border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-  .rename-file:hover .name { text-decoration: underline; }
+  .item[draggable="true"] { cursor: grab; }
+  [data-preview-row], [data-preview-row] > .item[draggable="true"] { cursor: pointer; }
+  [data-preview-row] .file-tag-list { cursor: default; }
+  .rename-file {
+    display: inline-block; max-inline-size: 100%; padding: 0; border: 0; background: transparent;
+    color: inherit; font: inherit; text-align: inherit; white-space: nowrap; cursor: pointer;
+  }
+  .rename-file:is(:hover, :focus-visible) { text-decoration: underline; }
+  .rename-file:focus-visible { outline-width: 1px; outline-offset: 0; }
   .entry-actions { display: flex; justify-content: flex-end; flex: 0 0 auto; min-width: 106px; gap: 5px; }
   .entry-action { display: grid; place-items: center; flex: 0 0 33px; height: 33px; padding: 0; border: 1px solid #e0e7f0; border-radius: 8px; background: #fbfcfe; color: #425d82; cursor: pointer; text-decoration: none; }
   .entry-action:hover { border-color: #a9c4e5; background: #e5effd; color: #234b78; }
@@ -1812,8 +1930,12 @@ PAGE_STYLE = """
   .download-progress { position: fixed; z-index: 2; left: 20px; bottom: 20px; width: min(385px, calc(100vw - 40px)); margin: 0; box-shadow: 0 6px 20px #17263c28; }
   .download-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .download-progress-row p { min-width: 0; }
-  .file-preview { width: min(var(--preview-width, 760px), calc(100vw - 28px)); max-width: none; max-height: calc(100dvh - 28px); padding: 16px; }
-  .file-preview[open][data-resized] { display: grid; height: min(var(--preview-height), calc(100dvh - 28px)); grid-template-rows: auto minmax(0, 1fr) auto; }
+  .file-preview {
+    --dialog-inline-gutter: 28px; --dialog-block-gutter: 28px;
+    width: min(var(--dialog-width, 760px), calc(100vw - var(--dialog-inline-gutter)));
+    max-width: none; max-height: calc(100dvh - var(--dialog-block-gutter)); padding: 16px;
+  }
+  .file-preview[open][data-resized] { display: grid; height: var(--dialog-height); grid-template-rows: auto minmax(0, 1fr) auto; }
   .preview-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
   .preview-titlebar h2 { overflow-wrap: anywhere; }
   .preview-close { flex: 0 0 32px; font-size: 19px; }
@@ -1826,9 +1948,10 @@ PAGE_STYLE = """
   .source-preview code { font: inherit; }
   .syntax-comment, .syntax-quote { color: #6a9955; }
   .syntax-keyword { color: #c586c0; }
+  .syntax-literal { color: #569cd6; }
   .syntax-string, .syntax-code, .syntax-fence { color: #ce9178; }
   .syntax-number { color: #b5cea8; }
-  .syntax-variable, .syntax-heading, .syntax-link { color: #9cdcfe; }
+  .syntax-variable, .syntax-heading, .syntax-link, .syntax-property { color: #9cdcfe; }
   .syntax-call, .syntax-emphasis { color: #dcdcaa; }
   .syntax-heading { font-weight: 700; }
   .syntax-link { text-decoration: underline; }
@@ -1836,16 +1959,25 @@ PAGE_STYLE = """
   .file-preview[data-resized] .preview-content { min-height: 0; max-height: none; }
   .file-preview[data-resized] .preview-content iframe { height: 100%; }
   .file-preview[data-resized] .preview-content img { max-height: 100%; }
-  .file-preview.preview-resizing { user-select: none; }
-  .file-preview.preview-resizing .preview-content { pointer-events: none; }
-  .preview-resize {
+  .dialog-resizing { user-select: none; }
+  .dialog-resizing :is(.preview-content, .editor-buffer) { pointer-events: none; }
+  .dialog-resize {
     position: absolute; inset-inline-end: 4px; inset-block-end: 4px;
     display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0;
     border-radius: 5px; color: var(--theme-muted); background: transparent;
     touch-action: none; cursor: nwse-resize;
   }
-  .preview-resize:hover, .preview-resize:focus-visible { color: var(--theme-text); background: var(--theme-hover); }
-  .file-editor { width: min(1060px, calc(100vw - 28px)); height: min(80vh, 780px); max-height: calc(100vh - 24px); padding: 0; overflow: hidden; border: 1px solid #48484a; background: #1e1e1e; color: #e2e2e2; box-shadow: 0 18px 60px #11182766; color-scheme: dark; }
+  .dialog-resize:hover, .dialog-resize:focus-visible { color: var(--theme-text); background: var(--theme-hover); }
+  .dialog-resize:focus-visible { outline-offset: -2px; }
+  .file-editor {
+    --dialog-inline-gutter: 28px; --dialog-block-gutter: 24px;
+    --editor-default-height: min(80dvh, 780px);
+    width: min(var(--dialog-width, 1060px), calc(100vw - var(--dialog-inline-gutter)));
+    height: var(--dialog-height, var(--editor-default-height));
+    max-width: none; max-height: calc(100dvh - var(--dialog-block-gutter));
+    padding: 0; overflow: hidden; border: 1px solid #48484a; background: #1e1e1e; color: #e2e2e2;
+    box-shadow: 0 18px 60px #11182766; color-scheme: dark;
+  }
   .file-editor[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
   .file-editor::backdrop { background: #101b2caa; }
   .editor-header { min-width: 0; padding: 14px 18px 12px; border-bottom: 1px solid #3c3c3c; background: #252526; }
@@ -1864,7 +1996,7 @@ PAGE_STYLE = """
   .editor-highlight code, .editor-highlight .syntax-heading { font: inherit; }
   .editor-content { z-index: 1; appearance: none; resize: none; background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: #fff; }
   .editor-content::selection { background: #396c9d9e; }
-  .editor-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 13px 10px 18px; border-top: 1px solid #3c3c3c; background: #252526; }
+  .editor-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 34px 10px 18px; border-top: 1px solid #3c3c3c; background: #252526; }
   .editor-status { min-width: 0; margin: 0; color: #c5c5c5; font-size: 12px; line-height: 1.45; }
   .editor-status.error, .editor-status[data-state="error"] { color: #ffb6ac; }
   .editor-actions { display: flex; flex-shrink: 0; align-items: center; gap: 7px; }
@@ -1884,6 +2016,7 @@ PAGE_STYLE = """
     main.wrap { animation: page-arrive 240ms var(--ease); }
     dialog[open] { animation: dialog-arrive 165ms var(--ease); }
     .copy-feedback:not([hidden]), .download-progress:not([hidden]) { animation: page-arrive 170ms var(--ease); }
+    [data-success-fading] { opacity: 0; transition: opacity 600ms ease-out; }
     #preview-results[aria-busy="true"] .count::before { animation: search-spin 700ms linear infinite; }
     .hero form, .hero form button, .home-link, .location a, .entry, .entry-action, .sort-toggle,
     .upload-panel, .upload-picker, .dialog-button { transition: background-color 150ms var(--ease), border-color 150ms var(--ease), box-shadow 150ms var(--ease), color 150ms var(--ease); }
@@ -1911,7 +2044,7 @@ PAGE_STYLE = """
     .entry-actions { min-width: 98px; gap: 4px; }
     .entry-action { flex-basis: 30px; height: 30px; }
     .list-title { flex-wrap: wrap; }
-    .list-title h2 { flex: 1 0 100%; }
+    .list-heading { flex: 1 0 100%; }
     .list-meta { margin-left: auto; }
     .date-label { display: none; }
     .kind { display: none; }
@@ -1923,9 +2056,12 @@ PAGE_STYLE = """
     .upload-intro { align-items: flex-start; }
     .upload-symbol { flex-basis: 28px; height: 28px; }
     .upload-symbol svg { width: 16px; height: 16px; }
-    .file-editor { width: calc(100vw - 12px); height: calc(100vh - 16px); max-height: calc(100dvh - 16px); }
+    .file-editor {
+      --dialog-inline-gutter: 12px; --dialog-block-gutter: 16px;
+      --editor-default-height: calc(100dvh - var(--dialog-block-gutter));
+    }
     .editor-header { padding: 11px 12px 9px; }
-    .editor-footer { padding: 8px 10px 8px 12px; }
+    .editor-footer { padding: 8px 34px 8px 12px; }
   }
   @media (max-width: 400px) {
     .entry { flex-wrap: wrap; gap: 0; padding: 0 8px 7px; }
@@ -2421,6 +2557,62 @@ DISPLAY_PREFERENCES = """
 })();</script>
 """
 
+SUCCESS_STATUS_SCRIPT = """
+const successStatuses = new WeakMap();
+
+function resetSuccessStatus(status) {
+  const state = successStatuses.get(status);
+  if (state) {
+    window.clearTimeout(state.timer);
+    state.events.abort();
+    successStatuses.delete(status);
+  }
+  status.removeAttribute("data-success-fading");
+}
+
+function scheduleSuccessStatus(status, { delay = 4500, onHide } = {}) {
+  resetSuccessStatus(status);
+  const state = { events: new AbortController() };
+  successStatuses.set(status, state);
+  const isCurrent = () => successStatuses.get(status) === state;
+  const isInteracting = () => status.matches(":focus-within") ||
+    (window.matchMedia("(hover: hover)").matches && status.matches(":hover"));
+
+  function waitToFade() {
+    if (!isCurrent()) return;
+    window.clearTimeout(state.timer);
+    status.removeAttribute("data-success-fading");
+    if (!isInteracting()) state.timer = window.setTimeout(fade, delay);
+  }
+
+  function hide() {
+    if (!isCurrent()) return;
+    if (isInteracting()) {
+      waitToFade();
+      return;
+    }
+    status.hidden = true;
+    resetSuccessStatus(status);
+    onHide?.();
+  }
+
+  function fade() {
+    if (!isCurrent() || isInteracting()) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      hide();
+      return;
+    }
+    status.setAttribute("data-success-fading", "");
+    state.timer = window.setTimeout(hide, 600);
+  }
+
+  for (const event of ["pointerenter", "pointerleave", "focusin", "focusout"]) {
+    status.addEventListener(event, () => queueMicrotask(waitToFade), { signal: state.events.signal });
+  }
+  waitToFade();
+}
+"""
+
 PREVIEW_SCRIPT = r"""
 (() => {
   const form = document.querySelector('form[role="search"]');
@@ -2447,7 +2639,6 @@ PREVIEW_SCRIPT = r"""
   let activeRequest;
   let generation = 0;
   let composing = false;
-  let copyTimer;
   let previewRequest;
   formatFileDates();
   let browseSnapshot = input.value.trim() ? null : results.cloneNode(true);
@@ -2599,6 +2790,13 @@ PREVIEW_SCRIPT = r"""
       number: /\b(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\d[\d_]*(?:\.[\d_]*)?(?:[eE][+-]?[\d_]+)?n?)\b/,
       call: /\b[A-Za-z_$][\w$]*(?=[ \t]*\()/,
     }),
+    json: tokenPattern({
+      property: /"(?:\\[^\r\n]|[^"\\\r\n])*"(?=\s*:)/,
+      string: /"(?:\\[^\r\n]|[^"\\\r\n])*"?/,
+      number: /-?\b(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?\b/,
+      literal: /\b(?:true|false|null)\b/,
+      punctuation: /[{}\[\]:,]/,
+    }),
     markdown: tokenPattern({
       fence: /^ {0,3}(?<marker>\x60{3,}|~{3,})[^\r\n]*(?:\r?\n|$)[\s\S]*?(?:^ {0,3}\k<marker>[\x60~]*[ \t]*(?=\r?$)|(?![\s\S]))/,
       heading: /^ {0,3}#{1,6}(?:[ \t]+[^\r\n]*|(?=\r?$))|^[^\r\n]+\r?\n[=-]{2,}[ \t]*(?=\r?$)/,
@@ -2653,7 +2851,7 @@ PREVIEW_SCRIPT = r"""
     const save = document.getElementById("editor-save");
     const close = document.getElementById("editor-close");
     const token = document.getElementById("upload-token").dataset.token;
-    const languages = { py: "python", md: "markdown", txt: "" };
+    const languages = { py: "python", md: "markdown", txt: "", json: "json" };
     const maxHighlightedCharacters = 200000;
     let current;
     let loading;
@@ -2701,7 +2899,7 @@ PREVIEW_SCRIPT = r"""
       return data;
     }
 
-    async function openEditor({ url, name, path }) {
+    async function openEditor({ url, name, path }, record) {
       const suffixStart = name.lastIndexOf(".");
       const extension = name.slice(suffixStart + 1).toLowerCase();
       if (suffixStart < 1 || !Object.hasOwn(languages, extension) || dialog.open) return;
@@ -2732,6 +2930,7 @@ PREVIEW_SCRIPT = r"""
         textarea.focus();
         setMessage(textarea.value.length > maxHighlightedCharacters
           ? "大型檔案以純文字顯示。" : "⌘S / Ctrl+S 儲存");
+        if (record) recentFiles.remember(record, false);
       } catch (failure) {
         if (!controller.signal.aborted) setMessage(failure.message, true);
       } finally {
@@ -2781,7 +2980,9 @@ PREVIEW_SCRIPT = r"""
       const button = event.target.closest("button[data-edit-url]");
       if (!button) return;
       const { editUrl, editName, editPath } = button.dataset;
-      openEditor({ url: editUrl, name: editName, path: editPath });
+      const previewButton = button.closest(".entry")?.querySelector("button[data-preview-kind]");
+      const record = previewButton && recentFiles?.fromButton(previewButton);
+      openEditor({ url: editUrl, name: editName, path: editPath }, record);
     });
     document.addEventListener("preview-file-created", (event) => openEditor(event.detail));
     textarea.addEventListener("scroll", syncScroll);
@@ -2855,11 +3056,13 @@ PREVIEW_SCRIPT = r"""
     function validRecord(value) {
       const file = filePath(value?.path);
       if (!file || !["image", "pdf", "text"].includes(value.kind)) return null;
+      const language = file.name.toLowerCase().endsWith(".json") ? "json" :
+        ["python", "shell", "javascript", "markdown"].includes(value.language) ? value.language : "";
       return {
         path: file.path,
         kind: value.kind,
-        language: ["python", "shell", "javascript", "markdown"].includes(value.language) ? value.language : "",
-        open: value.open === true,
+        language,
+        open: value.open === "preview" ? "preview" : value.open === true,
         cover: ["image", "text"].includes(value.cover) ? value.cover : "",
       };
     }
@@ -2940,7 +3143,7 @@ PREVIEW_SCRIPT = r"""
         previewKind: record.kind,
         previewUrl: path + "?preview=1",
         previewName: name,
-        previewOpen: record.open ? path : "",
+        previewOpen: record.open === "preview" ? path + "?preview=1" : record.open ? path : "",
         previewDownload: path + "?download=1",
         previewLanguage: record.language,
       }, record, true));
@@ -3023,7 +3226,7 @@ PREVIEW_SCRIPT = r"""
           const tile = button.closest(".entry")?.querySelector("[data-cover-url]")?.dataset;
           return validRecord({
             path: url.pathname, kind: data.previewKind, language: data.previewLanguage,
-            open: data.previewOpen === url.pathname,
+            open: data.previewOpen === url.pathname + url.search ? "preview" : data.previewOpen === url.pathname,
             cover: tile?.coverUrl === url.pathname + "?cover=1" ? tile.coverKind : "",
           });
         } catch {
@@ -3072,9 +3275,25 @@ PREVIEW_SCRIPT = r"""
     const controller = new AbortController();
     previewRequest = controller;
     const signal = controller.signal;
+    let recorded = false;
     const remember = () => {
-      if (record && !signal.aborted) recentFiles.remember(record, fromHistory);
+      if (!record || recorded || !recentFiles.enabled()) return;
+      recorded = true;
+      recentFiles.remember(record, fromHistory);
     };
+    function matchingPreview(response) {
+      if (!response.ok) return false;
+      const mime = response.headers.get("Content-Type")?.split(";", 1)[0].trim().toLowerCase() || "";
+      if (previewKind === "pdf") return mime === "application/pdf";
+      if (previewKind === "image") return mime.startsWith("image/");
+      return mime.startsWith("text/");
+    }
+    openLink.addEventListener("click", () => {
+      if (!record || recorded || !recentFiles.enabled() || openLink.hidden) return;
+      fetch(openLink.href, { method: "HEAD", redirect: "error" })
+        .then(response => { if (matchingPreview(response)) remember(); })
+        .catch(() => {});
+    }, { signal });
     function failed(response) {
       if (fromHistory && [404, 410].includes(response?.status)) {
         recentFiles.forget(record.path);
@@ -3095,18 +3314,23 @@ PREVIEW_SCRIPT = r"""
         links(true);
       }
       if (previewKind === "image" || previewKind === "pdf") {
-        if (fromHistory || (previewKind === "pdf" && record && recentFiles.enabled())) {
+        const verify = fromHistory || (previewKind === "pdf" && record && recentFiles.enabled());
+        if (verify) {
           const response = await fetch(previewUrl, { method: "HEAD", signal, redirect: "error" });
           if (signal.aborted) return;
-          if (!response.ok) { failed(response); return; }
+          if (!matchingPreview(response)) { failed(response); return; }
         }
         const element = document.createElement(previewKind === "image" ? "img" : "iframe");
         if (previewKind === "image") element.alt = previewName;
         else element.title = previewName;
-        element.addEventListener("load", remember, { once: true });
+        if (previewKind === "image") {
+          element.addEventListener("load", () => { if (!signal.aborted) remember(); }, { once: true });
+        }
         element.addEventListener("error", () => { if (!signal.aborted) failed(); }, { once: true });
         element.src = previewUrl;
         previewContent.replaceChildren(element);
+        // Native PDF viewers do not reliably emit the iframe's load event.
+        if (previewKind === "pdf" && verify) remember();
         return;
       }
       const response = await fetch(previewUrl, { signal, redirect: "error" });
@@ -3125,58 +3349,67 @@ PREVIEW_SCRIPT = r"""
   }
 
   document.getElementById("preview-close").addEventListener("click", () => previewDialog.close());
-  const previewResizeHandle = document.getElementById("preview-resize");
-  let previewResizeStart = null;
 
-  function setPreviewSize(width, height) {
-    const maxWidth = Math.max(1, document.documentElement.clientWidth - 28);
-    const maxHeight = Math.max(1, window.innerHeight - 28);
-    previewDialog.style.setProperty("--preview-width", Math.min(maxWidth, Math.max(320, width)) + "px");
-    previewDialog.style.setProperty("--preview-height", Math.min(maxHeight, Math.max(220, height)) + "px");
-    previewDialog.dataset.resized = "";
-  }
+  function enableDialogResize(dialog) {
+    const handle = dialog.querySelector(".dialog-resize");
+    let start = null;
 
-  function resetPreviewSize() {
-    delete previewDialog.dataset.resized;
-    previewDialog.style.removeProperty("--preview-width");
-    previewDialog.style.removeProperty("--preview-height");
-  }
-
-  function stopPreviewResize() {
-    previewResizeStart = null;
-    previewDialog.classList.remove("preview-resizing");
-  }
-
-  previewResizeHandle.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0 || !event.isPrimary || previewResizeStart) return;
-    const { width, height } = previewDialog.getBoundingClientRect();
-    previewResizeStart = { id: event.pointerId, x: event.clientX, y: event.clientY, width, height };
-    previewResizeHandle.setPointerCapture(event.pointerId);
-    previewDialog.classList.add("preview-resizing");
-  });
-  previewResizeHandle.addEventListener("pointermove", (event) => {
-    const start = previewResizeStart;
-    if (!start || event.pointerId !== start.id) return;
-    // The dialog stays centered, so a one-pixel edge movement needs two pixels of size.
-    setPreviewSize(start.width + 2 * (event.clientX - start.x), start.height + 2 * (event.clientY - start.y));
-  });
-  previewResizeHandle.addEventListener("lostpointercapture", stopPreviewResize);
-  previewResizeHandle.addEventListener("dblclick", resetPreviewSize);
-  previewResizeHandle.addEventListener("keydown", (event) => {
-    if (event.key === "Home") {
-      event.preventDefault();
-      resetPreviewSize();
-      return;
+    function setSize(width, height) {
+      const style = getComputedStyle(dialog);
+      const inlineGutter = parseFloat(style.getPropertyValue("--dialog-inline-gutter"));
+      const blockGutter = parseFloat(style.getPropertyValue("--dialog-block-gutter"));
+      const maxWidth = Math.max(1, document.documentElement.clientWidth - inlineGutter);
+      const maxHeight = Math.max(1, window.innerHeight - blockGutter);
+      dialog.style.setProperty("--dialog-width", Math.min(maxWidth, Math.max(320, width)) + "px");
+      dialog.style.setProperty("--dialog-height", Math.min(maxHeight, Math.max(220, height)) + "px");
+      dialog.dataset.resized = "";
     }
-    const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
-    if (!direction) return;
-    event.preventDefault();
-    const { width, height } = previewDialog.getBoundingClientRect();
-    setPreviewSize(width + direction[0] * 24, height + direction[1] * 24);
-  });
+
+    function resetSize() {
+      delete dialog.dataset.resized;
+      dialog.style.removeProperty("--dialog-width");
+      dialog.style.removeProperty("--dialog-height");
+    }
+
+    function stopResize() {
+      const id = start?.id;
+      start = null;
+      dialog.classList.remove("dialog-resizing");
+      if (id !== undefined && handle.hasPointerCapture(id)) handle.releasePointerCapture(id);
+    }
+
+    handle.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || !event.isPrimary || start) return;
+      start = { id: event.pointerId, x: event.clientX, y: event.clientY,
+                width: dialog.offsetWidth, height: dialog.offsetHeight };
+      handle.setPointerCapture(event.pointerId);
+      dialog.classList.add("dialog-resizing");
+    });
+    handle.addEventListener("pointermove", (event) => {
+      if (!start || event.pointerId !== start.id) return;
+      // The dialog stays centered, so one pixel at the corner changes the size by two.
+      setSize(start.width + 2 * (event.clientX - start.x), start.height + 2 * (event.clientY - start.y));
+    });
+    handle.addEventListener("lostpointercapture", stopResize);
+    handle.addEventListener("dblclick", resetSize);
+    handle.addEventListener("keydown", (event) => {
+      if (event.key === "Home") {
+        event.preventDefault();
+        resetSize();
+        return;
+      }
+      const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
+      if (!direction) return;
+      event.preventDefault();
+      setSize(dialog.offsetWidth + direction[0] * 24, dialog.offsetHeight + direction[1] * 24);
+    });
+    dialog.addEventListener("close", () => { if (!dialog.open) stopResize(); });
+  }
+
+  enableDialogResize(previewDialog);
+  if (editor) enableDialogResize(editor);
   previewDialog.addEventListener("close", () => {
     if (previewDialog.open) return;
-    stopPreviewResize();
     previewRequest?.abort();
     previewContent.replaceChildren();
   });
@@ -3185,30 +3418,26 @@ PREVIEW_SCRIPT = r"""
     for (const link of results.querySelectorAll("[data-drag-download]")) {
       if (link.matches("[data-move-source]")) {
         link.draggable = true;
-        link.title = supportsDragDownload ? "重新命名，拖到資料夾移動，或拖到 Finder 下載"
-                                         : "重新命名，或拖到資料夾移動";
+        link.title = "拖到資料夾移動" + (supportsDragDownload ? " · 拖到 Finder 下載" : "");
         continue;
       }
       if (!supportsDragDownload) continue;
       link.draggable = true;
-      if (link.matches("[data-rename-url]")) {
-        link.title = "重新命名，或拖到 Finder 下載";
-      } else {
-        link.title = link.matches("[download]") ? "下載到本機，也可拖到 Finder" : "拖到 Finder 下載";
-      }
+      link.title = link.matches("[download]") ? "下載到本機，也可拖到 Finder" : "拖到 Finder 下載";
     }
   }
 
   async function copyPath(button) {
     const path = button.dataset.copyPath;
-    window.clearTimeout(copyTimer);
     try {
       await navigator.clipboard.writeText(path);
+      resetSuccessStatus(copyFeedback);
       copyFeedback.hidden = false;
       copyFallback.hidden = true;
       copyMessage.textContent = "已複製伺服器路徑";
-      copyTimer = window.setTimeout(() => { copyFeedback.hidden = true; }, 2400);
+      scheduleSuccessStatus(copyFeedback, { delay: 2400 });
     } catch {
+      resetSuccessStatus(copyFeedback);
       copyFeedback.hidden = false;
       copyMessage.textContent = "請手動複製這個伺服器路徑";
       copyFallback.hidden = false;
@@ -3290,6 +3519,18 @@ PREVIEW_SCRIPT = r"""
     }
     const focusedSort = restoreSortFocus && document.activeElement?.dataset.sortField;
     results.replaceChildren(...nextResults.childNodes);
+    const nextTools = page.querySelector(".hero-tools");
+    const tools = document.querySelector(".hero-tools");
+    if (tools && nextTools) {
+      const storage = tools.querySelector("[data-server-storage]");
+      const nextStorage = nextTools.querySelector("[data-server-storage]");
+      if (!nextStorage) storage?.remove();
+      else if (!storage) tools.append(nextStorage);
+      else if (storage.innerHTML !== nextStorage.innerHTML) {
+        if (storage.dataset.storageState === nextStorage.dataset.storageState) nextStorage.dataset.storageSteady = "";
+        storage.replaceWith(nextStorage);
+      }
+    }
     formatFileDates();
     enableDragDownloads();
     if (focusedSort) {
@@ -3391,7 +3632,12 @@ PREVIEW_SCRIPT = r"""
     if (!composing) queueSearch(0, false, true);
   });
   results.addEventListener("click", (event) => {
-    const previewButton = event.target.closest("button[data-preview-kind]");
+    let previewButton = event.target.closest("button[data-preview-kind]");
+    const modified = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+    if (!previewButton && !modified && !event.defaultPrevented &&
+        !event.target.closest("a, button, input, select, textarea, label, .file-tag-list")) {
+      previewButton = event.target.closest("[data-preview-row]")?.querySelector("button[data-preview-kind]");
+    }
     if (previewButton) {
       openFilePreview(previewButton.dataset, recentFiles?.fromButton(previewButton));
       return;
@@ -3401,7 +3647,7 @@ PREVIEW_SCRIPT = r"""
       copyPath(copyButton);
       return;
     }
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (modified) return;
     const sortLink = event.target.closest("[data-sort-toggle]");
     if (sortLink) {
       event.preventDefault();
@@ -3449,6 +3695,7 @@ FILE_MOVE_SCRIPT = r"""
   let previousMove = null;
 
   function moveStatus(message, failed = false) {
+    resetSuccessStatus(status);
     status.hidden = false;
     status.toggleAttribute("data-move-failed", failed);
     feedback.textContent = message;
@@ -3510,6 +3757,12 @@ FILE_MOVE_SCRIPT = r"""
     } catch {}
     pending = false;
     moveStatus(message, !succeeded);
+    if (succeeded) {
+      scheduleSuccessStatus(status, {
+        delay: previousMove ? 10000 : 4500,
+        onHide: () => { previousMove = null; undo.hidden = true; },
+      });
+    }
     return succeeded ? { ok: true } : { ok: false, error: message };
   }
 
@@ -3544,12 +3797,13 @@ FILE_MOVE_SCRIPT = r"""
 
   results.addEventListener("dragstart", (event) => {
     const source = event.target.closest?.("[data-move-source]");
+    const file = source?.querySelector("[data-rename-url]");
     const transfer = event.dataTransfer;
-    if (!source || !transfer || event.defaultPrevented) return;
+    if (!file || !transfer || event.defaultPrevented) return;
     finishDrag();
     const row = source.closest(".entry");
     const id = String(++dragSequence);
-    currentDrag = { id, row, source, sourceURL: source.dataset.renameUrl, mtime: source.dataset.renameMtime };
+    currentDrag = { id, row, source, sourceURL: file.dataset.renameUrl, mtime: file.dataset.renameMtime };
     transfer.setData(dragType, id);
     transfer.effectAllowed = transfer.effectAllowed === "copy" ? "copyMove" : "move";
     row.classList.add("file-move-source");
@@ -3923,6 +4177,7 @@ DOWNLOAD_SCRIPT = r"""
   }
 
   async function download(path) {
+    resetSuccessStatus(panel);
     const controller = new AbortController();
     active = controller;
     const signal = controller.signal;
@@ -3940,6 +4195,7 @@ DOWNLOAD_SCRIPT = r"""
         progress("正在建立本機資料夾…");
         const folderName = await saveFolder(plan, handle, signal);
         progress("已下載資料夾 " + folderName, 1, 1);
+        scheduleSuccessStatus(panel);
         return;
       }
       const url = endpoint(path, archive ? "archive" : "download");
@@ -3960,6 +4216,7 @@ DOWNLOAD_SCRIPT = r"""
         setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
       }
       progress("已下載 " + name, 1, 1);
+      scheduleSuccessStatus(panel);
     } catch (error) {
       if (error instanceof RangeError) {
         status.textContent = "下載超過網頁的暫存容量，請重新下載並選擇儲存位置。";
@@ -3977,7 +4234,10 @@ DOWNLOAD_SCRIPT = r"""
 
   stop.addEventListener("click", () => {
     if (active) active.abort();
-    else panel.hidden = true;
+    else {
+      resetSuccessStatus(panel);
+      panel.hidden = true;
+    }
   });
   document.addEventListener("click", (event) => {
     const link = event.target.closest("a[data-transfer-url]");
@@ -4010,10 +4270,23 @@ UPLOAD_SCRIPT = """
   const progressBox = document.getElementById("upload-progress");
   const progress = progressBox.querySelector("progress");
   const status = document.getElementById("upload-status");
+  const bytes = document.getElementById("upload-bytes");
   const failures = document.getElementById("upload-failures");
   const conflict = document.getElementById("upload-conflict");
+  const locale = document.documentElement.lang || undefined;
+  const byteNumber = new Intl.NumberFormat(locale);
+  const percentNumber = new Intl.NumberFormat(locale, { style: "percent", maximumFractionDigits: 0 });
   let uploading = false;
   let highlightedTarget;
+
+  function showBytes(uploaded, total, done = false) {
+    const sent = Math.min(total, Math.max(0, uploaded));
+    const percent = total ? (100 * sent) / total : done ? 100 : 0;
+    progress.value = percent;
+    bytes.textContent = byteNumber.format(sent) + " B / " + byteNumber.format(total) + " B · " +
+      percentNumber.format(Math.floor(percent) / 100);
+    bytes.hidden = false;
+  }
 
   function highlight(target) {
     highlightedTarget?.classList.remove("drag-over");
@@ -4034,28 +4307,39 @@ UPLOAD_SCRIPT = """
     return new Promise((resolve, reject) => {
       const request = new XMLHttpRequest();
       const destination = new URL(target);
+      let active = true;
       if (!file) destination.searchParams.set("mkdir", "1");
+      if (file) {
+        request.upload.onprogress = (event) => {
+          if (active) onProgress(Math.min(file.size, event.loaded), false);
+        };
+        request.upload.onload = () => { if (active) onProgress(file.size, true); };
+      }
       request.open("POST", destination);
       request.setRequestHeader("X-Preview-Token", config.token);
       if (file) {
         request.setRequestHeader("Content-Type", "application/octet-stream");
         request.setRequestHeader("X-Upload-Name", encodeURIComponent(path.at(-1)));
         if (asCopy) request.setRequestHeader("X-Upload-Conflict", "copy");
-        request.upload.onprogress = (event) => onProgress(event.loaded);
       } else {
         request.setRequestHeader("X-Upload-Path", encodeURIComponent(path.join("/")));
       }
       request.onload = () => {
+        active = false;
         if (file && request.status === 409 && !asCopy) { resolve(null); return; }
         let result;
-        try { result = JSON.parse(request.responseText); } catch { result = {}; }
-        if (request.status !== 201 && (file || request.status !== 200)) {
+        try { result = JSON.parse(request.responseText) || {}; } catch { result = {}; }
+        if ((request.status !== 201 && (file || request.status !== 200))
+            || (file && typeof result.name !== "string")) {
           reject(new Error(result.error || (file ? "上傳未完成" : "無法建立資料夾")));
           return;
         }
         resolve(result);
       };
-      request.onerror = () => reject(new Error("連線中斷，請再試一次"));
+      request.onerror = request.onabort = () => {
+        active = false;
+        reject(new Error("連線中斷，請再試一次"));
+      };
       request.send(file || null);
     });
   }
@@ -4119,14 +4403,17 @@ UPLOAD_SCRIPT = """
   async function uploadSelection(getSelection, target) {
     if (uploading) return;
     uploading = true;
+    resetSuccessStatus(progressBox);
     progressBox.hidden = false;
     progress.removeAttribute("value");
+    bytes.hidden = true;
     failures.textContent = "";
     status.textContent = "正在讀取選取的檔案和資料夾…";
     try {
       await uploadEntries(await getSelection(), target);
     } catch (failure) {
       progress.value = 0;
+      bytes.hidden = true;
       status.textContent = "無法處理上傳項目";
       failures.textContent = failure.message;
     } finally {
@@ -4145,9 +4432,9 @@ UPLOAD_SCRIPT = """
     let succeeded = 0;
     let created = 0;
     let skipped = 0;
-    let completed = 0;
-    progress.max = Math.max(1, directories.length + files.reduce((total, item) => total + Math.max(1, item.file.size), 0));
-    progress.value = 0;
+    let committed = 0;
+    const total = files.reduce((amount, item) => amount + item.file.size, 0);
+    showBytes(0, total);
 
     for (const [index, path] of directories.entries()) {
       const name = path.join("/");
@@ -4163,33 +4450,40 @@ UPLOAD_SCRIPT = """
           errors.push(name + "：" + failure.message);
         }
       }
-      progress.value = ++completed;
     }
 
     for (const [index, { file, path }] of files.entries()) {
       const name = path.join("/");
       const parent = path.slice(0, -1);
       const folderUrl = destinationUrl(base, parent, true);
-      status.textContent = "上傳 " + (index + 1) + "/" + files.length + " · " + name + " → " + folderName;
-      const onProgress = (loaded) => { progress.value = completed + loaded; };
+      const sending = "上傳 " + (index + 1) + "/" + files.length + " · " + name + " → " + folderName;
+      const finalizing = "正在等待伺服器寫入檔案…" + " · " + name;
+      status.textContent = sending;
+      const sendFile = (asCopy) => {
+        status.textContent = file.size ? sending : finalizing;
+        return postUpload(folderUrl, file, path, asCopy, (loaded, sent) => {
+          showBytes(committed + loaded, total);
+          if (sent) status.textContent = finalizing;
+        });
+      };
       try {
         if (blocked.has(parent.join("/"))) throw new Error("目標資料夾無法建立");
         const existing = await fetch(destinationUrl(base, path), { method: "HEAD" });
         const asCopy = existing.ok;
         if (asCopy && !(await resolveConflict(name))) { skipped += 1; continue; }
-        let result = await postUpload(folderUrl, file, path, asCopy, onProgress);
+        let result = await sendFile(asCopy);
         if (!result) {
+          showBytes(committed, total);
           if (!(await resolveConflict(name))) { skipped += 1; continue; }
-          progress.value = completed;
-          result = await postUpload(folderUrl, file, path, true, onProgress);
+          result = await sendFile(true);
         }
         if (result.name !== path.at(-1)) copies.push([...parent, result.name].join("/"));
         succeeded += 1;
+        committed += file.size;
       } catch (failure) {
         errors.push(name + "：" + failure.message);
       } finally {
-        completed += Math.max(1, file.size);
-        progress.value = completed;
+        showBytes(committed, total);
       }
     }
     status.textContent = "已上傳 " + succeeded + " 個檔案" +
@@ -4201,7 +4495,11 @@ UPLOAD_SCRIPT = """
     if (errors.length > details.length) details.push("還有 " + (errors.length - details.length) + " 項失敗");
     if (copies.length) details.push("副本：" + copies.slice(0, 10).join("、") + (copies.length > 10 ? " 等" : ""));
     failures.textContent = details.join("　");
-    if (succeeded || created) document.dispatchEvent(new Event("preview-upload-complete"));
+    showBytes(committed, total, !errors.length && !skipped && (files.length > 0 || directories.length > 0));
+    if (succeeded || created) {
+      document.dispatchEvent(new Event("preview-upload-complete"));
+      if (!errors.length && !skipped) scheduleSuccessStatus(progressBox);
+    }
   }
 
   function hasDraggedFiles(event) {
@@ -4449,6 +4747,7 @@ DELETE_SCRIPT = """
     if (!button || dialog.returnValue !== "move") return;
     pending = true;
     button.disabled = true;
+    resetSuccessStatus(status);
     status.classList.remove("error");
     status.hidden = false;
     recovery.hidden = true;
@@ -4470,13 +4769,19 @@ DELETE_SCRIPT = """
       if (!response.ok || typeof data.trash_path !== "string") {
         throw new Error(data.error || "無法將檔案移到回收區");
       }
+      status.classList.remove("error");
+      status.hidden = false;
       message.textContent = "已移到伺服器回收區";
       recovery.textContent = data.trash_path;
       recovery.hidden = false;
+      scheduleSuccessStatus(status, { delay: 7500 });
       document.dispatchEvent(new CustomEvent("preview-file-path-change", { detail: { from: url.pathname } }));
       document.dispatchEvent(new Event("preview-upload-complete"));
     } catch (error) {
+      resetSuccessStatus(status);
+      status.hidden = false;
       status.classList.add("error");
+      recovery.hidden = true;
       message.textContent = error.message || "無法將檔案移到回收區";
     } finally {
       pending = false;
@@ -4739,6 +5044,7 @@ CREATE_SCRIPT = """
       message.textContent = "已在伺服器新增空白檔案";
       createdPath.textContent = data.path;
       createdPath.hidden = false;
+      scheduleSuccessStatus(status);
       document.dispatchEvent(new Event("preview-upload-complete"));
       document.dispatchEvent(new CustomEvent("preview-file-created", { detail: data }));
     } catch (failure) {
@@ -4838,6 +5144,7 @@ RENAME_SCRIPT = """
       message.textContent = "已在伺服器重新命名";
       updatedPath.textContent = data.path;
       updatedPath.hidden = false;
+      scheduleSuccessStatus(status);
       if (typeof data.url === "string") {
         document.dispatchEvent(new CustomEvent("preview-file-path-change", { detail: { from: url.pathname, to: data.url } }));
       }
@@ -4870,7 +5177,9 @@ RENAME_DIALOG_HTML = """
 
 UPLOAD_STATUS_HTML = """
 <section id="upload-progress" class="upload-progress" hidden>
-<p id="upload-status" role="status"></p><progress value="0" max="1" aria-label="檔案上傳進度"></progress>
+<p id="upload-status" role="status"></p>
+<progress value="0" max="100" aria-label="檔案上傳進度" aria-describedby="upload-bytes"></progress>
+<p id="upload-bytes" hidden></p>
 <p id="upload-failures" class="upload-failures"></p></section>
 """
 
@@ -4882,6 +5191,13 @@ UPLOAD_DIALOG_HTML = """
 <button class="dialog-button" value="copy">另存副本</button></form></dialog>
 """
 
+DIALOG_RESIZE_CONTROL = """
+<button id="{id}" class="dialog-resize" type="button" aria-label="{label}"
+ aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home" title="拖曳調整大小，雙擊還原">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"
+ stroke-linecap="round" aria-hidden="true"><path d="M3 13 13 3m-6 10 6-6m-2 6 2-2"/></svg></button>
+"""
+
 FILE_PREVIEW_HTML = """
 <dialog id="file-preview" class="file-preview" aria-labelledby="preview-title">
 <div class="preview-titlebar"><h2 id="preview-title">檔案預覽</h2>
@@ -4889,11 +5205,7 @@ FILE_PREVIEW_HTML = """
 <div id="preview-content" class="preview-content"></div>
 <div class="preview-footer"><a id="preview-open" target="_blank" rel="noopener">開啟完整檔案</a>
 <a id="preview-download" download>下載</a></div>
-<button id="preview-resize" class="preview-resize" type="button" aria-label="調整預覽大小"
- aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home" title="拖曳調整預覽大小，雙擊還原">
-<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"
- stroke-linecap="round" aria-hidden="true"><path d="M3 13 13 3m-6 10 6-6m-2 6 2-2"/></svg></button></dialog>
-"""
+""" + DIALOG_RESIZE_CONTROL.format(id="preview-resize", label="調整預覽大小") + "</dialog>"
 
 EDITOR_HTML = """
 <dialog id="file-editor" class="file-editor" aria-labelledby="editor-title" aria-describedby="editor-path">
@@ -4909,8 +5221,7 @@ EDITOR_HTML = """
 <button id="editor-close" class="dialog-button" type="button">關閉</button>
 <button id="editor-save" class="dialog-button editor-save" type="button" disabled>儲存</button>
 </div></div>
-</dialog>
-"""
+""" + DIALOG_RESIZE_CONTROL.format(id="editor-resize", label="調整編輯視窗大小") + "</dialog>"
 
 
 class ReportEntry(NamedTuple):
@@ -4995,9 +5306,7 @@ def modified_label(modified_ns, language):
     )
 
 
-def size_label(size_bytes, is_dir, language):
-    if is_dir or size_bytes < 0:
-        return f'<span class="size" aria-label="{escape(localized("大小未知", language), quote=True)}">—</span>'
+def format_byte_size(size_bytes):
     size = size_bytes
     units = ("B", "KB", "MB", "GB", "TB", "PB")
     unit = 0
@@ -5005,10 +5314,49 @@ def size_label(size_bytes, is_dir, language):
         size /= 1000
         unit += 1
     rounded = f"{size:.1f}".rstrip("0").rstrip(".") if unit and size < 10 else f"{size:.0f}"
+    return f"{rounded} {units[unit]}"
+
+
+def size_label(size_bytes, is_dir, language):
+    if is_dir or size_bytes < 0:
+        return f'<span class="size" aria-label="{escape(localized("大小未知", language), quote=True)}">—</span>'
     return (
         f'<span class="size" title="{size_bytes:,} {escape(localized("位元組", language))}" '
         f'aria-label="{escape(localized("大小", language), quote=True)} {size_bytes:,} {escape(localized("位元組", language))}">'
-        f'{rounded} {units[unit]}</span>'
+        f'{format_byte_size(size_bytes)}</span>'
+    )
+
+
+def render_storage_status(storage, language):
+    if not storage or storage.get("total", 0) <= 0:
+        return ""
+    titles = {"quota": "帳號儲存配額", "filesystem": "共用檔案系統"}
+    title = titles.get(storage.get("kind"))
+    if title is None:
+        return ""
+    total = storage["total"]
+    available = min(total, max(0, storage["available"]))
+    used = min(total, max(0, storage["used"]))
+    used_percent = f"{(1000 * used // total) / 10:g}"
+    if available == 0:
+        state, notice = "full", "沒有可用空間"
+    elif available * 10 <= total:
+        state, notice = "low", "空間將滿"
+    else:
+        state, notice = "ok", "空間充足"
+
+    def tr(text):
+        return escape(localized(text, language), quote=True)
+
+    usage = tr("已使用 {percent}%").format(percent=used_percent)
+    return (
+        f'<section class="storage-status" data-server-storage data-storage-state="{state}" aria-labelledby="storage-title">'
+        f'<div class="storage-heading"><h2 id="storage-title">{tr(title)}</h2>'
+        f'<span class="storage-state">{tr(notice)}</span></div>'
+        f'<div class="storage-values"><p class="storage-available"><strong>{format_byte_size(available)}</strong> {tr("可用")}</p>'
+        f'<p>{tr("總容量")} <strong>{format_byte_size(total)}</strong></p></div>'
+        f'<div class="storage-gauge"><meter min="0" max="100" value="{used_percent}" '
+        f'aria-label="{tr("容量使用率")}">{used_percent}%</meter><span aria-hidden="true">{usage}</span></div></section>'
     )
 
 
@@ -5183,7 +5531,7 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
     href = escape(href, quote=True)
     absolute_path = root / relative_path
     copy_label = tr("複製 {name} 的路徑")
-    download = drag = quick_preview = ""
+    download = drag = quick_preview = row_preview = ""
     transfer_url = escape(file_url, quote=True)
     if is_dir:
         download_label = tr("下載資料夾 {name}")
@@ -5208,6 +5556,7 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
         if preview_type:
             preview_url = escape(file_url + "?preview=1", quote=True)
             preview_label = tr("預覽 {name}")
+            row_preview = f' data-preview-row title="{preview_label}"'
             open_url = ""
             if suffix in INLINE_FILE_TYPES or (not home_view and suffix in {".html", ".htm"}):
                 open_url = href
@@ -5227,6 +5576,14 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
     delete_action = edit_action = tag_action = move_action = ""
     name_content = escape(relative_path.name)
     if can_change_file:
+        rename_label = tr("重新命名 {name}")
+        name_content = (
+            f'<button class="file-name-label rename-file" type="button" data-rename-url="{transfer_url}" '
+            f'data-rename-path="{escape(str(absolute_path), quote=True)}" '
+            f'data-rename-name="{escape(relative_path.name, quote=True)}" data-rename-mtime="{modified_ns}" '
+            f'aria-label="{rename_label}" title="{rename_label}" aria-haspopup="dialog" '
+            f'aria-controls="rename-file-dialog">{name_content}</button>'
+        )
         delete_action = file_delete_action(absolute_path, file_url, modified_ns, language)
         if not any(is_transfer_internal(part) for part in relative_path.parts):
             move_action = (
@@ -5263,7 +5620,7 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
             '<path d="M2 3.4V7l6.2 6.2a1 1 0 0 0 1.4 0l3.6-3.6a1 1 0 0 0 0-1.4L7 2H3.4A1.4 1.4 0 0 0 2 3.4Z"/>'
             '<circle cx="5.2" cy="5.2" r=".65"/></svg></button>'
         )
-        name_content = f'<span class="file-name-line"><span class="file-name-label">{name_content}</span>{file_tag_dots(tags, language)}</span>'
+        name_content = f'<span class="file-name-line">{name_content}{file_tag_dots(tags, language)}</span>'
     cover = ""
     if home_view and not is_dir and not any(is_transfer_internal(part) for part in relative_path.parts):
         cover_kind = ""
@@ -5284,21 +5641,11 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
     )
     if is_dir:
         item = f'<a class="item" href="{href}">{item_body}<span aria-hidden="true" class="arrow">›</span></a>'
-    elif can_change_file:
-        rename_label = tr("重新命名 {name}")
-        rename_name = escape(relative_path.name, quote=True)
-        rename_path = escape(str(absolute_path), quote=True)
-        move_source = " data-move-source" if not any(is_transfer_internal(part) for part in relative_path.parts) else ""
-        item = (
-            f'<button class="item rename-file" type="button" data-rename-url="{transfer_url}" '
-            f'data-rename-path="{rename_path}" data-rename-name="{rename_name}" '
-            f'data-rename-mtime="{modified_ns}" aria-label="{rename_label}" title="{tr("重新命名")}"{drag}{move_source}>'
-            f'{item_body}</button>'
-        )
     else:
-        item = f'<span class="item"{drag}>{item_body}</span>'
+        move_source = " data-move-source" if move_action else ""
+        item = f'<span class="item"{drag}{move_source}>{item_body}</span>'
     return (
-        f'<li class="entry" data-search-path="{escape(relative_path.as_posix(), quote=True)}"{drop_target}>{item}'
+        f'<li class="entry" data-search-path="{escape(relative_path.as_posix(), quote=True)}"{drop_target}{row_preview}>{item}'
         f'<div class="entry-actions">{quick_preview}{edit_action}{tag_action}{move_action}'
         f'<button class="entry-action copy-path" type="button" data-copy-path="{escape(str(absolute_path), quote=True)}" '
         f'aria-label="{copy_label}" title="{tr("複製伺服器路徑")}"><span class="copy-mark" aria-hidden="true"></span></button>'
@@ -5508,19 +5855,33 @@ def folder_column_navigation(root, folder, mode, show_hidden, content_search=Fal
 def preview_page(root, entries, mode, folder=None, query="", truncated=False,
                  upload_token="", show_hidden=False, results_only=False, row_cache=None,
                  server_identity="", language="zh-Hant", content_search=False, content_limited=False,
-                 recent_scope=""):
+                 recent_scope="", storage=None):
     def tr(text):
         return escape(localized(text, language), quote=True)
 
     home_view = bool(upload_token)
     current_directory = root / folder if folder else root
     query_value = escape(query, quote=True)
-    shown = (tr("內容搜尋結果" if content_search else "搜尋結果") if query
-             else (escape(folder.name) if folder else tr("資料夾內容")))
+    shown = tr("內容搜尋結果" if content_search else "搜尋結果") if query else ""
     count = (tr("前 {count} 筆，請縮小搜尋範圍") if truncated else tr("{count} 個項目"))
     count = count.format(count=SEARCH_LIMIT if truncated else len(entries))
     links = []
     current_url = entry_href(folder, True) if folder else "/"
+    folder_parts = folder.parts if folder else ()
+    breadcrumbs = []
+    for depth, name in enumerate((root.name or "/", *folder_parts)):
+        separator = '<span class="folder-breadcrumb-separator" aria-hidden="true">›</span>' if depth else ""
+        if depth == len(folder_parts):
+            tag = "span" if query else "h2"
+            crumb = f'<{tag} aria-current="page">{escape(name)}</{tag}>'
+        else:
+            path = entry_href(Path(*folder_parts[:depth]), True) if depth else "/"
+            href = escape(listing_href(path, mode, show_hidden=show_hidden,
+                                       content_search=content_search), quote=True)
+            title = f' title="{tr("工作區根目錄")}"' if not depth else ""
+            crumb = f'<a href="{href}"{title}>{escape(name)}</a>'
+        breadcrumbs.append(f'<li>{separator}{crumb}</li>')
+    breadcrumb = f'<nav class="folder-breadcrumb" aria-label="{tr("伺服器路徑")}"><ol>{"".join(breadcrumbs)}</ol></nav>'
     sort_fields = (
         ("date", "修改日期", "newest", "oldest"),
         ("size", "大小", "largest", "smallest"),
@@ -5615,7 +5976,8 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
             )
         )
     limit = f'<p class="content-limit">{tr("已達內容搜尋上限，請在更小的資料夾搜尋。")}</p>' if content_limited else ""
-    results = f"""<div id="preview-results">{nav}{upload_panel}<div class="list-title"><h2>{shown}</h2>
+    results = f"""<div id="preview-results">{nav}{upload_panel}<div class="list-title">
+<div class="list-heading"><h2 class="search-heading">{shown}</h2>{breadcrumb}</div>
 <div class="list-meta"><p class="count">{count}</p>{hidden_control}
 {sort_controls}</div></div>{limit}{file_list_header}{body}</div>"""
     if results_only:
@@ -5624,7 +5986,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
                        if server_identity else "")
     column_navigation = (f'<nav id="folder-columns" class="folder-columns" aria-label="{tr("資料夾直欄")}" hidden></nav>'
                          if home_view else "")
-    scripts = PREVIEW_SCRIPT + DOWNLOAD_SCRIPT
+    scripts = SUCCESS_STATUS_SCRIPT + PREVIEW_SCRIPT + DOWNLOAD_SCRIPT
     if home_view:
         scripts += (
             FILE_MOVE_SCRIPT + UPLOAD_SCRIPT + DELETE_SCRIPT + RENAME_SCRIPT + CREATE_SCRIPT +
@@ -5632,6 +5994,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
         )
     view_picker = localized_template(VIEW_PICKER, language) if home_view else ""
     home_label = tr("回伺服器主目錄")
+    storage_status = render_storage_status(storage, language)
     styles = PAGE_STYLE + FILE_VIEW_STYLE + FILE_THEME_STYLE
     if home_view:
         styles += FILE_TAG_STYLE + FILE_COVER_STYLE + FILE_MOVE_STYLE
@@ -5648,6 +6011,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
 <a class="home-link" href="http://{FILES_HOST}/" aria-label="{home_label}" title="{home_label}"><span class="home-mark" aria-hidden="true"></span></a>
 {remote_identity}</div>
 <div class="hero"><h1 class="current-path"><span class="current-path-label">current file path:</span><code>{escape(str(current_directory))}</code></h1>
+<div class="hero-tools">
 <form action="{search_action}" method="get" role="search"
  data-search-prefix="{escape(folder.as_posix() + "/", quote=True) if folder else ""}"
  data-search-limit="{SEARCH_LIMIT}">
@@ -5657,7 +6021,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
 <input type="search" name="q" value="{query_value}" maxlength="120" placeholder="{placeholder}" autocomplete="off"></label>
 <button type="submit">{tr("搜尋")}</button>
 <label class="content-search"><input type="checkbox" name="content" value="1" data-content-search{' checked' if content_search else ''}> {tr("根據內容搜尋")}</label>
-</form></div></div></header>
+</form>{storage_status}</div></div></div></header>
 <main class="wrap">
 <p id="preview-status" class="sr-only" role="status"></p>
 <p id="preview-error" class="search-error" role="alert" hidden>{tr("即時搜尋暫時無法更新，請按「搜尋」再試一次。")}</p>
@@ -5803,6 +6167,75 @@ def create_transfer_archive(root, relative, info):
     except BaseException:
         archive_file.close()
         raise
+
+
+def linux_mountpoint(folder):
+    """Locate the most specific mount in this worker's mount namespace."""
+    mountpoint = None
+    try:
+        with open("/proc/self/mountinfo", encoding="utf-8", errors="surrogateescape") as mounts:
+            for line in mounts:
+                fields = line.split(maxsplit=5)
+                if len(fields) < 6:
+                    continue
+                mount = Path(re.sub(r"\\([0-7]{3})", lambda code: chr(int(code[1], 8)), fields[4]))
+                if folder.is_relative_to(mount) and (mountpoint is None or len(mount.parts) >= len(mountpoint.parts)):
+                    mountpoint = mount
+    except OSError:
+        pass
+    return mountpoint
+
+
+def account_storage_quota(folder):
+    """Return used bytes and the active block limit, when quota-tools can read it."""
+    if not sys.platform.startswith("linux") or os.getuid() != os.geteuid():
+        return None
+    quota = shutil.which("quota", path="/usr/bin:/bin:/usr/sbin:/sbin")
+    mountpoint = linux_mountpoint(folder) if quota else None
+    if mountpoint is None:
+        return None
+    try:
+        result = subprocess.run(
+            [quota, "-u", "-v", "-w", "-p", "--show-mntpoint", "--hide-device", "-f", str(mountpoint)],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+            encoding="utf-8", errors="surrogateescape", timeout=0.6, env={**os.environ, "LC_ALL": "C"},
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode not in (0, 1):
+        return None
+    number = r"([0-9]{1,20})"
+    pattern = rf"^\s*{re.escape(str(mountpoint))}\s+{number}\*?\s+{number}\s+{number}\s+{number}\s+"
+    for line in result.stdout.splitlines():
+        match = re.match(pattern, line)
+        if match is None:
+            continue
+        used, soft, hard, grace = map(int, match.groups())
+        # A soft limit becomes binding after its grace period has expired.
+        if soft and used > soft and grace <= time():
+            hard = min(soft, hard) if hard else soft
+        if hard:
+            return used * 1024, hard * 1024
+    return None
+
+
+def folder_storage_status(folder):
+    try:
+        volume = os.statvfs(folder)
+    except OSError:
+        return None
+    unit = volume.f_frsize or volume.f_bsize
+    total = volume.f_blocks * unit
+    if total <= 0:
+        return None
+    available = min(total, max(0, volume.f_bavail * unit))
+    quota = account_storage_quota(folder)
+    if quota is not None:
+        used, limit = quota
+        return {"kind": "quota", "total": limit, "used": used,
+                "available": min(available, max(0, limit - used))}
+    used = min(total, max(0, (volume.f_blocks - volume.f_bfree) * unit))
+    return {"kind": "filesystem", "total": total, "used": used, "available": available}
 
 
 class PreviewHandler(http.server.SimpleHTTPRequestHandler):
@@ -6227,6 +6660,7 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
             show_hidden=show_hidden, server_identity=getattr(self.server, "preview_identity", ""),
             language=self.language, content_search=search_content,
             content_limited=content_search is not None and content_search.limited, recent_scope=self.recent_scope,
+            storage=folder_storage_status(folder) if self.home_view else None,
         ))
 
     def do_POST(self):
@@ -6916,7 +7350,7 @@ def editor_file_path(request_path):
         raise EditorError(403, "無法編輯伺服器的內部檔案")
     relative = Path(*components)
     if relative.suffix.lower() not in EDITABLE_SUFFIXES:
-        raise EditorError(415, "目前只支援編輯 .py、.md 和 .txt 檔案")
+        raise EditorError(415, "目前只支援編輯 .py、.md、.txt 和 .json 檔案")
     return relative
 
 
