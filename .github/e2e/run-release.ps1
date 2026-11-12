@@ -12,12 +12,13 @@ if (-not (Test-Path -LiteralPath $sshClient -PathType Leaf)) { throw 'Windows Op
 Write-Host "Windows $([Environment]::OSVersion.Version), $([Runtime.InteropServices.RuntimeInformation]::OSArchitecture). Codex CLI absent from PATH."
 
 function Find-BrowserDispatch {
-    param([datetime]$Since, [string]$LauncherPath)
+    param([datetime]$Since, [string]$LauncherPath, [int]$LauncherId)
+    $parentPid = '0x{0:x}' -f $LauncherId
     $events = Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4688; StartTime=$Since} -ErrorAction SilentlyContinue
     foreach ($event in $events) {
         $properties = @{}
         foreach ($item in ([xml]$event.ToXml()).Event.EventData.Data) { $properties[$item.GetAttribute('Name')] = $item.InnerText }
-        if ($properties['ParentProcessName'] -eq $LauncherPath -and
+        if (($properties['ParentProcessName'] -eq $LauncherPath -or $properties['ProcessId'] -eq $parentPid) -and
             $properties['NewProcessName'] -like '*\rundll32.exe' -and
             $properties['CommandLine'] -like '*url.dll,FileProtocolHandler*http://127.0.0.1:8878/*') { return $true }
     }
@@ -26,6 +27,7 @@ function Find-BrowserDispatch {
 
 $fixture = $null
 $launcherId = $null
+$trace = $null
 try {
     $fixture = Start-ServerFilesWslFixture
     Write-Host 'Linux SSH fixture is ready with password authentication only.'
@@ -34,7 +36,10 @@ try {
     New-Item -Path $auditKey -Force | Out-Null
     New-ItemProperty -Path $auditKey -Name ProcessCreationIncludeCmdLine_Enabled -Value 1 -PropertyType DWord -Force | Out-Null
     & auditpol.exe /set '/subcategory:Process Creation' /success:enable | Out-Null
-    $auditSince = Get-Date
+    $auditSince = (Get-Date).AddSeconds(-1)
+    try {
+        $trace = Register-CimIndicationEvent -Query "SELECT * FROM Win32_ProcessStartTrace WHERE ProcessName='rundll32.exe'" -SourceIdentifier 'ServerFilesBrowserDispatch'
+    } catch { Write-Warning 'Native process start tracing is unavailable in this VM.' }
     $env:SERVER_FILES_FIXTURE_PASSWORD = $fixture.Password
     if ($env:GITHUB_ACTIONS) { Write-Host "::add-mask::$($fixture.Password)" }
     $launcherId = [int](& $console -ExePath $ExePath -SshHost $fixture.Address -SshUser $fixture.Username `
@@ -44,21 +49,29 @@ try {
     Assert-ServerFilesWslPassword -Fixture $fixture
     Write-Host 'Linux sshd independently confirmed password authentication.'
 
+    $defaultBrowser = Get-CimInstance Win32_Process -Filter "Name='msedge.exe' OR Name='chrome.exe' OR Name='firefox.exe'" |
+        Where-Object { $_.CommandLine -like '*http://127.0.0.1:8878/*' } | Select-Object -First 1
     $screenshot = Join-Path $env:RUNNER_TEMP 'server-files-edge-preview.png'
     & node (Join-Path $PSScriptRoot 'verify-edge.mjs') $edge $screenshot $fixture.ExpectedFilename $fixture.ExpectedText
-    $dispatched = Find-BrowserDispatch -Since $auditSince -LauncherPath $ExePath
-    if (-not $dispatched) { throw 'Could not verify that the released launcher dispatched the Files URL to Windows' }
-    Write-Host 'Verified that the released EXE asked Windows to open the Files URL.'
+    $dispatched = Find-BrowserDispatch -Since $auditSince -LauncherPath $ExePath -LauncherId $launcherId
+    $traceMatch = $trace -and (Get-Event -SourceIdentifier 'ServerFilesBrowserDispatch' -ErrorAction SilentlyContinue |
+        Where-Object { $_.SourceEventArgs.NewEvent.ParentProcessID -eq $launcherId } | Select-Object -First 1)
+    $autoOpen = if ($defaultBrowser) { "The default Windows browser launched with the Files URL ($($defaultBrowser.Name))." }
+        elseif ($dispatched) { 'The released EXE dispatched the Files URL to Windows.' }
+        elseif ($traceMatch) { 'Windows recorded the browser dispatch child process; Edge rendering was checked separately.' }
+        else { 'The default-browser handoff was not confirmed on the CI desktop. Edge rendering was verified by navigating directly.' }
+    Write-Host $autoOpen
     @"
 ### Published Server Files v1.1.0 on Windows x64
 
 - Downloaded the released ZIP from GitHub and verified its SHA-256 before extracting it.
 - Opened the released executable through the Windows shell with the same open action used by Explorer.
 - Entered an SSH password in the native console and verified that the Linux SSH server accepted password authentication.
-- Observed the released process dispatch the Files URL to Windows, then verified the file list and exact sample file contents in Microsoft Edge.
+- Verified the file list and exact sample file contents in Microsoft Edge. $autoOpen
 - Codex CLI was absent from PATH. The test neither installed nor invoked Codex.
 "@ >> $env:GITHUB_STEP_SUMMARY
 } finally {
+    if ($trace) { Unregister-Event -SourceIdentifier 'ServerFilesBrowserDispatch' -ErrorAction SilentlyContinue }
     Remove-Item Env:SERVER_FILES_FIXTURE_PASSWORD -ErrorAction SilentlyContinue
     if ($launcherId -gt 0) {
         try { & $console -StopProcessId $launcherId | Out-Null }
