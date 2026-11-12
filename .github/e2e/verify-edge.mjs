@@ -83,6 +83,32 @@ try {
     throw new Error(`Edge did not show ${description}`);
   }
 
+  async function dragResize(dialogId, handleId) {
+    const before = await evaluate(`(() => {
+      const box = document.getElementById(${JSON.stringify(dialogId)}).getBoundingClientRect();
+      const handle = document.getElementById(${JSON.stringify(handleId)}).getBoundingClientRect();
+      return {width: box.width, height: box.height, x: handle.x + handle.width / 2, y: handle.y + handle.height / 2};
+    })()`);
+    await send('Input.dispatchMouseEvent', {type: 'mousePressed', x: before.x, y: before.y, button: 'left', buttons: 1, clickCount: 1});
+    await send('Input.dispatchMouseEvent', {type: 'mouseMoved', x: before.x + 29, y: before.y + 25, button: 'left', buttons: 1});
+    await send('Input.dispatchMouseEvent', {type: 'mouseReleased', x: before.x + 29, y: before.y + 25, button: 'left', clickCount: 1});
+    await waitFor(`(() => {
+      const dialog = document.getElementById(${JSON.stringify(dialogId)});
+      const box = dialog.getBoundingClientRect();
+      return dialog.hasAttribute('data-resized') && box.width > ${before.width + 16} && box.height > ${before.height + 16};
+    })()`, `${dialogId} resized by pointer`);
+  }
+
+  const tokens = 'span.syntax-property, span.syntax-string, span.syntax-number, span.syntax-literal';
+  function hasJsonColors(selector) {
+    return `(() => {
+      const nodes = [...document.querySelectorAll(${JSON.stringify(selector + ' :is(' + tokens + ')')})];
+      return nodes.some(n => n.textContent === '"theme"') && nodes.some(n => n.textContent === '128') &&
+        nodes.some(n => n.textContent === 'true') && new Set(nodes.map(n => getComputedStyle(n).color)).size === 4;
+    })()`;
+  }
+
+  await send('Emulation.setEmulatedMedia', {features: [{name: 'prefers-reduced-motion', value: 'reduce'}]});
   await send('Emulation.setDeviceMetricsOverride', {width: 1280, height: 800, deviceScaleFactor: 1, mobile: false});
   const url = 'http://127.0.0.1:8878/';
   const navigation = await send('Page.navigate', {url});
@@ -92,10 +118,22 @@ try {
   await waitFor(`location.href === ${JSON.stringify(url)} && Boolean(document.querySelector(${JSON.stringify(preview)}))`, filename);
   await evaluate(`document.querySelector(${JSON.stringify(preview)}).click()`);
   await waitFor(`document.querySelector('#file-preview[open] #preview-content pre')?.textContent.trim() === ${JSON.stringify(body)}`, 'the expected SSH file contents');
+  await evaluate(`document.querySelector('#preview-close').click()`);
+  await waitFor(`!document.querySelector('#file-preview[open]')`, 'the text preview closed');
+  await waitFor(`Boolean(document.querySelector('[data-server-storage]') && document.querySelector('.folder-breadcrumb'))`, 'storage and folder breadcrumbs');
+  const configRow = '[data-search-path="config.json"]';
+  await evaluate(`document.querySelector('${configRow} .item .icon').click()`);
+  await waitFor(hasJsonColors('#file-preview[open] #preview-content'), 'four JSON syntax colors in preview');
+  await dragResize('file-preview', 'preview-resize');
+  await waitFor(`[...document.querySelectorAll('#recent-files button')].some(button => button.textContent.includes('config.json'))`, 'JSON in Recently Opened');
   const { product } = await send('Browser.getVersion');
   const shot = await send('Page.captureScreenshot', {format: 'png'});
   await writeFile(screenshot, Buffer.from(shot.data, 'base64'));
-  console.log(`${product} rendered the server file list and opened ${filename} with the expected contents.`);
+  await evaluate(`document.querySelector('#preview-close').click()`);
+  await evaluate(`document.querySelector('${configRow} [data-edit-url]').click()`);
+  await waitFor(hasJsonColors('#file-editor[open] #editor-code'), 'four JSON syntax colors in editor');
+  await dragResize('file-editor', 'editor-resize');
+  console.log(`${product} rendered the server file list, verified ${filename}, and checked JSON syntax colors and pointer resizing in preview and editor.`);
 } finally {
   socket?.close();
   browser.kill();

@@ -62,12 +62,12 @@ try {
         else { 'The default-browser handoff was not confirmed on the CI desktop. Edge rendering was verified by navigating directly.' }
     Write-Host $autoOpen
     @"
-### Published Server Files v1.1.0 on Windows x64
+### Published Server Files v1.2.0 on Windows x64
 
 - Downloaded the released ZIP from GitHub and verified its SHA-256 before extracting it.
 - Opened the released executable through the Windows shell with the same open action used by Explorer.
 - Entered an SSH password in the native console and verified that the Linux SSH server accepted password authentication.
-- Verified the file list and exact sample file contents in Microsoft Edge. $autoOpen
+- Verified the file list, sample contents, JSON colors, and pointer resizing in Microsoft Edge. $autoOpen
 - Codex CLI was absent from PATH. The test neither installed nor invoked Codex.
 "@ >> $env:GITHUB_STEP_SUMMARY
 } finally {

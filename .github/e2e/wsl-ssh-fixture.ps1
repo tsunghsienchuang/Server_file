@@ -170,6 +170,16 @@ install -d -m 0700 -o "$login" -g "$login" "$folder"
 printf '%s\n' "$marker" > "$folder/password-fixture.txt"
 chown "$login:$login" "$folder/password-fixture.txt"
 chmod 0600 "$folder/password-fixture.txt"
+cat > "$folder/config.json" <<'JSON'
+{
+  "theme": "dark",
+  "limit": 128,
+  "enabled": true,
+  "empty": null
+}
+JSON
+chown "$login:$login" "$folder/config.json"
+chmod 0600 "$folder/config.json"
 
 ssh-keygen -q -t ed25519 -N '' -f "$state/host_ed25519"
 cat > "$state/sshd_config" <<CONFIG
