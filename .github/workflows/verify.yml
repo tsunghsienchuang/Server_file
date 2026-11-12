@@ -1,0 +1,47 @@
+name: Verify Server Files
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: python3 -m unittest discover -s tests
+
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - run: ./scripts/build.sh
+
+  windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-2025, windows-11-arm]
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: '1.27.4'
+          cache: false
+      - name: Test and run the native launcher
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $env:CGO_ENABLED = '0'
+          $env:GOTOOLCHAIN = 'local'
+          $stage = New-Item -ItemType Directory (Join-Path $env:RUNNER_TEMP 'server-files')
+          Copy-Item -Path Sources/windows/*.go, Sources/windows/go.mod, Sources/preview_server.py -Destination $stage.FullName
+          Set-Location -LiteralPath $stage.FullName
+          go test ./...
+          go build -trimpath -o ServerFiles.exe .
+          if ((.\ServerFiles.exe --version) -ne 'Server Files dev') { throw 'Unexpected launcher version' }
