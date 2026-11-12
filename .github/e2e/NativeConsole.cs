@@ -81,7 +81,7 @@ public static class ServerFilesNativeConsole
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern bool GetConsoleScreenBufferInfo(SafeFileHandle output, out BufferInfo info);
     [DllImport("kernel32.dll", EntryPoint = "ReadConsoleOutputCharacterW", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern bool ReadConsoleOutputCharacter(SafeFileHandle output, [Out] StringBuilder characters,
+    private static extern bool ReadConsoleOutputCharacter(SafeFileHandle output, [Out] char[] characters,
                                                           uint count, Coord origin, out uint read);
     [DllImport("kernel32.dll", EntryPoint = "WriteConsoleInputW", SetLastError = true)]
     private static extern bool WriteConsoleInput(SafeFileHandle input, [In] InputRecord[] records, uint count,
@@ -283,11 +283,11 @@ public static class ServerFilesNativeConsole
         var result = new StringBuilder();
         for (int row = Math.Max(0, info.Cursor.Y - 50); row <= info.Cursor.Y; row++)
         {
-            var text = new StringBuilder(info.Size.X);
+            var text = new char[info.Size.X];
             uint read;
             if (!ReadConsoleOutputCharacter(output, text, (uint)info.Size.X, new Coord { Y = (short)row }, out read))
                 throw NativeError("Read actual console output");
-            result.AppendLine(text.ToString().TrimEnd());
+            result.AppendLine(new string(text, 0, (int)read).TrimEnd(' ', '\t', '\0'));
         }
         return result.ToString();
     }
@@ -299,7 +299,7 @@ public static class ServerFilesNativeConsole
 
     private static bool HasPasswordPrompt(string text)
     {
-        return Regex.IsMatch(text, @"(?im)password[ \t]*:[ \t]*\r?$");
+        return Regex.IsMatch(text, @"(?i)\bpassword[ \t]*:");
     }
 
     private static string Diagnostic(string screen, string password)

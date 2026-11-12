@@ -38,7 +38,7 @@ try {
     $env:SERVER_FILES_FIXTURE_PASSWORD = $fixture.Password
     if ($env:GITHUB_ACTIONS) { Write-Host "::add-mask::$($fixture.Password)" }
     $launcherId = [int](& $console -ExePath $ExePath -SshHost $fixture.Address -SshUser $fixture.Username `
-        -SshPort $fixture.Port -RemoteFolder $fixture.RemoteDirectory -ExpectedHostFingerprint $fixture.Fingerprint)
+        -SshPort $fixture.Port -RemoteFolder $fixture.RemoteDirectory -ExpectedHostFingerprint $fixture.Fingerprint -Verbose)
     Remove-Item Env:SERVER_FILES_FIXTURE_PASSWORD -ErrorAction SilentlyContinue
     if ($launcherId -le 0) { throw 'Native Windows launch did not return a process ID' }
     Assert-ServerFilesWslPassword -Fixture $fixture
