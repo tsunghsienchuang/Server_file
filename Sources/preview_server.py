@@ -1932,7 +1932,7 @@ PAGE_STYLE = """
   .download-progress-row p { min-width: 0; }
   .file-preview {
     --dialog-inline-gutter: 28px; --dialog-block-gutter: 28px;
-    width: min(var(--dialog-width, 760px), calc(100vw - var(--dialog-inline-gutter)));
+    width: min(var(--dialog-width, 760px), calc(100% - var(--dialog-inline-gutter)));
     max-width: none; max-height: calc(100dvh - var(--dialog-block-gutter)); padding: 16px;
   }
   .file-preview[open][data-resized] { display: grid; height: var(--dialog-height); grid-template-rows: auto minmax(0, 1fr) auto; }
@@ -1972,7 +1972,7 @@ PAGE_STYLE = """
   .file-editor {
     --dialog-inline-gutter: 28px; --dialog-block-gutter: 24px;
     --editor-default-height: min(80dvh, 780px);
-    width: min(var(--dialog-width, 1060px), calc(100vw - var(--dialog-inline-gutter)));
+    width: min(var(--dialog-width, 1060px), calc(100% - var(--dialog-inline-gutter)));
     height: var(--dialog-height, var(--editor-default-height));
     max-width: none; max-height: calc(100dvh - var(--dialog-block-gutter));
     padding: 0; overflow: hidden; border: 1px solid #48484a; background: #1e1e1e; color: #e2e2e2;
@@ -3352,47 +3352,97 @@ PREVIEW_SCRIPT = r"""
 
   function enableDialogResize(dialog) {
     const handle = dialog.querySelector(".dialog-resize");
+    const storageKey = "server-files-dialog-size:" + dialog.id;
+    const minWidth = 320, minHeight = 220;
+    let preferredSize = null;
     let start = null;
+    let syncAfterDrag = false;
 
-    function setSize(width, height) {
+    function applySize(size) {
+      preferredSize = size;
+      if (size) {
+        // The CSS viewport limits affect the rendered size, not the stored preference.
+        dialog.style.setProperty("--dialog-width", size.width + "px");
+        dialog.style.setProperty("--dialog-height", size.height + "px");
+        dialog.dataset.resized = "";
+      } else {
+        delete dialog.dataset.resized;
+        dialog.style.removeProperty("--dialog-width");
+        dialog.style.removeProperty("--dialog-height");
+      }
+    }
+
+    function restoreSize() {
+      let raw, saved;
+      try { raw = localStorage.getItem(storageKey); } catch { return; }
+      try { saved = JSON.parse(raw); } catch {}
+      const valid = Number.isSafeInteger(saved?.width) && saved.width >= minWidth &&
+                    Number.isSafeInteger(saved?.height) && saved.height >= minHeight;
+      applySize(valid ? { width: saved.width, height: saved.height } : null);
+    }
+
+    function persistSize() {
+      try {
+        if (preferredSize) localStorage.setItem(storageKey, JSON.stringify(preferredSize));
+        else localStorage.removeItem(storageKey);
+      } catch {}
+    }
+
+    function resizeFrom(initial, dx, dy) {
       const style = getComputedStyle(dialog);
       const inlineGutter = parseFloat(style.getPropertyValue("--dialog-inline-gutter"));
       const blockGutter = parseFloat(style.getPropertyValue("--dialog-block-gutter"));
       const maxWidth = Math.max(1, document.documentElement.clientWidth - inlineGutter);
-      const maxHeight = Math.max(1, window.innerHeight - blockGutter);
-      dialog.style.setProperty("--dialog-width", Math.min(maxWidth, Math.max(320, width)) + "px");
-      dialog.style.setProperty("--dialog-height", Math.min(maxHeight, Math.max(220, height)) + "px");
-      dialog.dataset.resized = "";
+      const maxHeight = Math.max(1, Math.floor(parseFloat(style.maxHeight) || window.innerHeight - blockGutter));
+      const width = dx ? Math.min(maxWidth, Math.max(minWidth, Math.round(initial.width + dx))) : initial.width;
+      const height = dy ? Math.min(maxHeight, Math.max(minHeight, Math.round(initial.height + dy))) : initial.height;
+      if (width === initial.width && height === initial.height) {
+        applySize(initial.preferred);
+        return false;
+      }
+      applySize({
+        width: width === initial.width && initial.preferred ? initial.preferred.width : Math.max(minWidth, width),
+        height: height === initial.height && initial.preferred ? initial.preferred.height : Math.max(minHeight, height),
+      });
+      return true;
     }
 
     function resetSize() {
-      delete dialog.dataset.resized;
-      dialog.style.removeProperty("--dialog-width");
-      dialog.style.removeProperty("--dialog-height");
+      applySize(null);
+      persistSize();
     }
 
-    function stopResize() {
-      const id = start?.id;
+    function stopResize(commit) {
+      const drag = start;
+      if (!drag) return;
       start = null;
       dialog.classList.remove("dialog-resizing");
-      if (id !== undefined && handle.hasPointerCapture(id)) handle.releasePointerCapture(id);
+      if (handle.hasPointerCapture(drag.id)) handle.releasePointerCapture(drag.id);
+      if (commit && preferredSize !== drag.preferred) persistSize();
+      else if (syncAfterDrag) restoreSize();
+      else if (!commit) applySize(drag.preferred);
+      syncAfterDrag = false;
     }
 
     handle.addEventListener("pointerdown", (event) => {
       if (event.button !== 0 || !event.isPrimary || start) return;
       start = { id: event.pointerId, x: event.clientX, y: event.clientY,
-                width: dialog.offsetWidth, height: dialog.offsetHeight };
+                width: dialog.offsetWidth, height: dialog.offsetHeight, preferred: preferredSize };
       handle.setPointerCapture(event.pointerId);
       dialog.classList.add("dialog-resizing");
     });
     handle.addEventListener("pointermove", (event) => {
       if (!start || event.pointerId !== start.id) return;
       // The dialog stays centered, so one pixel at the corner changes the size by two.
-      setSize(start.width + 2 * (event.clientX - start.x), start.height + 2 * (event.clientY - start.y));
+      resizeFrom(start, 2 * (event.clientX - start.x), 2 * (event.clientY - start.y));
     });
-    handle.addEventListener("lostpointercapture", stopResize);
+    handle.addEventListener("pointerup", (event) => {
+      if (event.pointerId === start?.id) stopResize(true);
+    });
+    handle.addEventListener("lostpointercapture", () => stopResize(false));
     handle.addEventListener("dblclick", resetSize);
     handle.addEventListener("keydown", (event) => {
+      if (start) return;
       if (event.key === "Home") {
         event.preventDefault();
         resetSize();
@@ -3401,9 +3451,17 @@ PREVIEW_SCRIPT = r"""
       const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
       if (!direction) return;
       event.preventDefault();
-      setSize(dialog.offsetWidth + direction[0] * 24, dialog.offsetHeight + direction[1] * 24);
+      const initial = { width: dialog.offsetWidth, height: dialog.offsetHeight, preferred: preferredSize };
+      if (resizeFrom(initial, direction[0] * 24, direction[1] * 24)) persistSize();
     });
-    dialog.addEventListener("close", () => { if (!dialog.open) stopResize(); });
+    dialog.addEventListener("close", () => { if (!dialog.open) stopResize(false); });
+    window.addEventListener("storage", (event) => {
+      if (event.key !== null && event.key !== storageKey) return;
+      try { if (event.storageArea !== localStorage) return; } catch { return; }
+      if (start) syncAfterDrag = true;
+      else restoreSize();
+    });
+    restoreSize();
   }
 
   enableDialogResize(previewDialog);
