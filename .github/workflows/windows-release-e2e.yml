@@ -1,0 +1,46 @@
+name: Windows release end-to-end
+
+on:
+  push:
+    branches: [codex/windows-release-e2e]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release-e2e
+  cancel-in-progress: true
+
+jobs:
+  released-windows-x64:
+    runs-on: windows-2025
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Download and extract the published Windows ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $package = Join-Path $env:RUNNER_TEMP 'server-files-release'
+          New-Item -ItemType Directory -Path $package | Out-Null
+          $zip = Join-Path $package 'Server-Files-1.1.0-Windows-x64.zip'
+          Invoke-WebRequest -Uri 'https://github.com/tsunghsienchuang/Server_file/releases/download/v1.1.0/Server-Files-1.1.0-Windows-x64.zip' -OutFile $zip
+          $digest = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($digest -cne 'a53d5e2af6e3b3691b9c969a6e907964d04138c723a5d85d3eb03d50c67660d9') { throw 'Released ZIP SHA-256 mismatch' }
+          Expand-Archive -LiteralPath $zip -DestinationPath $package
+          $launcher = Join-Path $package 'ServerFiles.exe'
+          if (-not (Test-Path -LiteralPath $launcher -PathType Leaf)) { throw 'Released executable missing from ZIP' }
+          "SERVER_FILES_RELEASE_EXE=$launcher" >> $env:GITHUB_ENV
+          Write-Host 'Downloaded, verified, and extracted the published v1.1.0 x64 ZIP on Windows.'
+      - name: Open the release and verify SSH password login in Edge
+        shell: pwsh
+        run: ./.github/e2e/run-release.ps1 -ExePath $env:SERVER_FILES_RELEASE_EXE
+      - name: Attach Edge preview screenshot
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: windows-edge-file-preview
+          path: ${{ runner.temp }}/server-files-edge-preview.png
+          if-no-files-found: error
+          retention-days: 14
