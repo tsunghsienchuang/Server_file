@@ -121,14 +121,11 @@ function Start-ServerFilesWslFixture {
         $storage = Join-Path $tempPath 'rootfs'
         $null = New-Item -ItemType Directory -Path $storage -ErrorAction Stop
         $ubuntuBase = 'https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release'
-        $archiveName = 'ubuntu-base-22.04-base-amd64.tar.gz'
-        $manifest = (Invoke-WebRequest -Uri "$ubuntuBase/SHA256SUMS" -TimeoutSec 90 -ErrorAction Stop).Content
-        $filePattern = [regex]::Escape($archiveName)
-        $digest = [regex]::Match($manifest, "(?m)^([0-9a-fA-F]{64}) [ *]$filePattern\r?$")
-        if (!$digest.Success) { throw 'Ubuntu did not list the fixture rootfs checksum.' }
+        $archiveName = 'ubuntu-base-22.04.5-base-amd64.tar.gz'
+        $expectedDigest = '242cd8898b33ea806ef5f13b1076ed7c76f9f989d18384452f7166692438ff1a'
         $archive = Join-Path $tempPath $archiveName
         Invoke-WebRequest -Uri "$ubuntuBase/$archiveName" -OutFile $archive -TimeoutSec 180 -ErrorAction Stop
-        if ((Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash -ne $digest.Groups[1].Value) {
+        if ((Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash -ne $expectedDigest) {
             throw 'Ubuntu fixture rootfs checksum mismatch.'
         }
         $tarPath = Join-Path $tempPath 'rootfs.tar'
@@ -201,15 +198,13 @@ CONFIG
 /usr/sbin/sshd -t -f "$state/sshd_config"
 ssh-keygen -lf "$state/host_ed25519.pub" -E sha256
 '@
-        $setupPath = Join-Path $tempPath 'fixture-setup.sh'
-        [System.IO.File]::WriteAllText($setupPath, $setup.Replace([string][char]13, ''), [System.Text.UTF8Encoding]::new($false))
+        $linuxScript = '/tmp/server-files-fixture-setup.sh'
         $prefix = @('--distribution', $distro, '--user', 'root', '--exec')
-        $linuxScript = (Invoke-ServerFilesWsl -Wsl $wsl -Arguments ($prefix + @('wslpath', '-u', $setupPath))).Trim()
+        $null = Invoke-ServerFilesWsl -Wsl $wsl -Arguments ($prefix + @('/bin/sh', '-c', "cat > $linuxScript")) -StdinText ($setup.Replace([string][char]13, '') + [char]10)
         $result = Invoke-ServerFilesWsl -Wsl $wsl -Arguments ($prefix + @('/bin/bash', $linuxScript, [string]$port, $fixture.ExpectedText)) -StdinText ($fixture.Password + [char]10) -TimeoutSeconds 420
         $fingerprint = [regex]::Match($result, 'SHA256:[A-Za-z0-9+/]+')
         if (!$fingerprint.Success) { throw 'The fixture SSH host key has no SHA-256 fingerprint.' }
         $fixture.Fingerprint = $fingerprint.Value
-        Remove-Item -LiteralPath $setupPath -Force -ErrorAction Stop
 
         $state = '/tmp/server-files-fixture-ssh'
         $fixture.Daemon = New-ServerFilesWslProcess -Wsl $wsl -Arguments ($prefix + @('/usr/sbin/sshd', '-D', '-f', "$state/sshd_config", '-E', "$state/sshd.log"))
