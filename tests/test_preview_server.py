@@ -1,4 +1,7 @@
+from contextlib import nullcontext
+import errno
 import http.client
+import json
 import os
 from pathlib import Path
 import socket
@@ -21,7 +24,7 @@ class PreviewServerTests(unittest.TestCase):
         self.root = self.base / "files"
         self.root.mkdir()
 
-    def request(self, path, *, host=preview.FILES_HOST, language="zh-TW"):
+    def request(self, path, *, host=preview.FILES_HOST, language="zh-TW", method="GET", headers=None):
         server, client = socket.socketpair()
 
         def handle_request():
@@ -37,10 +40,10 @@ class PreviewServerTests(unittest.TestCase):
         response = http.client.HTTPResponse(client)
         try:
             client.settimeout(5)
-            client.sendall(
-                f"GET {path} HTTP/1.1\r\nHost: {host}\r\n"
-                f"Accept-Language: {language}\r\nConnection: close\r\n\r\n".encode("ascii")
-            )
+            request_headers = {"Host": host, "Accept-Language": language, "Connection": "close", **(headers or {})}
+            request = f"{method} {path} HTTP/1.1\r\n"
+            request += "".join(f"{name}: {value}\r\n" for name, value in request_headers.items())
+            client.sendall((request + "\r\n").encode("ascii"))
             response.begin()
             return response.status, dict(response.getheaders()), response.read()
         finally:
@@ -114,6 +117,98 @@ class PreviewServerTests(unittest.TestCase):
             )
         self.assertEqual(len(matches), 1)
         self.assertTrue(truncated)
+
+    def move(self, source, destination, mtime, **headers):
+        target = preview.entry_href(destination, True) if destination.parts else "/"
+        request_headers = {
+            "Origin": f"http://{preview.FILES_HOST}",
+            "X-Preview-Token": "fixture-token",
+            "X-Preview-Destination": target,
+            "X-Preview-File-Mtime": str(mtime),
+            **headers,
+        }
+        status, _, body = self.request(preview.entry_href(source, False) + "?move=1", method="POST",
+                                       headers=request_headers)
+        return status, json.loads(body)
+
+    def test_move_and_move_out_preserve_tags_with_native_and_nfs_paths(self):
+        directory = Path("Archive folder")
+        (self.root / directory).mkdir()
+        for unsupported in (None, errno.ENOSYS, errno.EINVAL):
+            with self.subTest(unsupported=unsupported):
+                name = f"檔案 {unsupported} %.txt"
+                relative = Path(name)
+                original = self.root / relative
+                original.write_text("fictional data", encoding="utf-8")
+                modified = original.stat().st_mtime_ns
+                preview.update_file_tag(self.root, relative, "green", True)
+                force_fallback = (nullcontext() if unsupported is None else
+                                  patch.object(preview, "rename_without_replacement",
+                                               side_effect=OSError(unsupported, "no native no-replace")))
+                with force_fallback:
+                    status, payload = self.move(relative, directory, modified)
+                    self.assertEqual(status, 200, payload)
+                    moved = directory / name
+                    self.assertEqual(payload["url"], preview.entry_href(moved, False))
+                    self.assertEqual(payload["path"], str(self.root / moved))
+                    self.assertFalse(original.exists())
+                    self.assertEqual((self.root / moved).read_text(encoding="utf-8"), "fictional data")
+                    self.assertEqual(preview.read_file_tags(self.root, moved), ("green",))
+                    self.assertEqual(preview.read_file_tags(self.root, relative), ())
+                    self.assertEqual(self.move(moved, Path(), modified)[0], 200)
+                    self.assertTrue(original.exists())
+                    self.assertEqual(preview.read_file_tags(self.root, relative), ("green",))
+
+    def test_move_rejects_collision_unsafe_path_and_stale_request(self):
+        relative = Path("notes.txt")
+        original = self.root / relative
+        original.write_text("original", encoding="utf-8")
+        modified = original.stat().st_mtime_ns
+        directory = Path("archive")
+        (self.root / directory).mkdir()
+        occupied = self.root / directory / relative
+        self.assertEqual(self.move(relative, Path(), modified)[0], 409)
+        self.assertEqual(self.move(relative, directory, modified + 1)[0], 409)
+        self.assertEqual(self.move(relative, directory, modified, Origin="http://example.invalid")[0], 403)
+        self.assertEqual(self.move(relative, Path(preview.TRASH_DIRECTORY), modified)[0], 403)
+        self.assertEqual(self.move(relative, directory, modified, **{"X-Preview-Destination": "/../"})[0], 400)
+        (self.root / "folder-alias").symlink_to(self.root / directory)
+        self.assertEqual(self.move(relative, Path("folder-alias"), modified)[0], 404)
+        occupied.symlink_to(self.base / "outside.txt")
+        self.assertEqual(self.move(relative, directory, modified)[0], 409)
+        self.assertTrue(occupied.is_symlink())
+        occupied.unlink()
+        os.link(original, occupied)
+        self.assertEqual(self.move(relative, directory, modified)[0], 409)
+        self.assertEqual(occupied.stat().st_ino, original.stat().st_ino)
+        occupied.unlink()
+        with patch.object(preview, "rename_without_replacement", side_effect=OSError(errno.EXDEV, "cross-device")):
+            self.assertEqual(self.move(relative, directory, modified)[0], 409)
+        self.assertFalse(occupied.exists())
+        self.assertEqual(original.read_text(encoding="utf-8"), "original")
+
+    def test_move_fallback_restores_source_if_destination_appears(self):
+        source = Path("notes.txt")
+        original = self.root / source
+        original.write_text("original", encoding="utf-8")
+        modified = original.stat().st_mtime_ns
+        directory = Path("archive")
+        destination = self.root / directory
+        destination.mkdir()
+        destination_inode = destination.stat().st_ino
+        native_link = os.link
+
+        def link_after_collision(name, new_name, **options):
+            if name == "file" and os.fstat(options["dst_dir_fd"]).st_ino == destination_inode:
+                (destination / source.name).write_text("occupied", encoding="utf-8")
+            return native_link(name, new_name, **options)
+
+        with patch.object(preview, "rename_without_replacement", side_effect=OSError(errno.EINVAL, "unsupported")):
+            with patch.object(preview.os, "link", side_effect=link_after_collision):
+                self.assertEqual(self.move(source, directory, modified)[0], 409)
+        self.assertEqual(original.read_text(encoding="utf-8"), "original")
+        self.assertEqual((destination / source.name).read_text(encoding="utf-8"), "occupied")
+        self.assertFalse(any(self.root.glob(preview.RENAME_STAGE_PREFIX + "*")))
 
 
 if __name__ == "__main__":

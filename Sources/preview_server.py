@@ -61,10 +61,12 @@ UI_TRANSLATIONS = {
     "伺服器無法將檔案移到回收區": "The server could not move the file to Trash",
     "伺服器無法建立資料夾": "The server could not create the folder",
     "伺服器無法新增檔案": "The server could not create the file",
+    "伺服器無法移動檔案": "The server could not move the file.",
     "伺服器無法讀取或儲存檔案": "The server could not read or save the file",
     "伺服器無法讀取這個下載項目（": "The server could not read this download (",
     "伺服器無法重新命名檔案": "The server could not rename the file",
     "伺服器的檔案系統不支援不覆寫的重新命名": "The server file system cannot rename files without overwriting",
+    "伺服器的檔案系統不支援安全移動": "The server file system does not support safe moves.",
     "伺服器路徑": "Server path",
     "位元組": "bytes",
     "例如 analysis.py": "For example, analysis.py",
@@ -86,6 +88,7 @@ UI_TRANSLATIONS = {
     "取消": "Cancel",
     "另存副本": "Save a copy",
     "只支援 UTF-8 純文字": "Only UTF-8 plain text is supported",
+    "只能移動一般檔案": "Only regular files can be moved.",
     "只能移動一般檔案到回收區": "Only regular files can be moved to Trash",
     "只能重新命名一般檔案": "Only regular files can be renamed",
     "可編輯檔案上限為 2 MiB": "Editable files must be 2 MiB or smaller",
@@ -102,6 +105,8 @@ UI_TRANSLATIONS = {
     "將 {name} 移到回收區": "Move {name} to trash",
     "將檔案移到回收區？": "Move the file to Trash?",
     "尚未儲存": "Unsaved changes",
+    "尚未開啟檔案": "No files opened yet",
+    "工作區根目錄": "Workspace root",
     "已上傳": "Uploaded",
     "已下載": "Downloaded",
     "已下載資料夾": "Folder downloaded",
@@ -111,25 +116,32 @@ UI_TRANSLATIONS = {
     "已取消下載，本機可能有部分檔案。": "Download canceled. Some files may already be on this Mac.",
     "已在伺服器新增空白檔案": "Empty file created on the server",
     "已在伺服器重新命名": "Renamed on the server",
+    "已復原 {name} 的移動": "Restored {name} to its original folder",
     "已更新": "Updated",
     "已有同名檔案": "A file with this name already exists",
     "已有同名檔案或資料夾": "A file or folder with this name already exists",
     "已移到伺服器回收區": "Moved to server Trash",
+    "已移動 {name}": "Moved {name}",
     "已經存在。可以略過，或保留原檔並另存一份副本。": "already exists. Skip it or keep the original and save a copy.",
     "已複製伺服器路徑": "Server path copied",
     "已達內容搜尋上限，請在更小的資料夾搜尋。": "Content search limit reached. Search a smaller folder.",
     "已顯示": "Showing",
     "建立": "Created",
     "建立資料夾的請求必須是空的": "A create-folder request must have an empty body",
+    "復原": "Undo",
     "快速預覽": "Quick preview",
     "打包成 ZIP": "Download as ZIP",
     "找不到包含搜尋字詞的文字檔。": "No text files contain the search terms.",
     "找不到原始檔案": "The original file could not be found",
+    "找不到原始檔案或目標資料夾": "The original file or destination folder could not be found.",
     "找不到可標記的一般檔案": "No regular file was found to tag",
     "找不到可編輯的一般檔案": "No editable regular file was found",
     "找不到符合的檔案或資料夾。": "No matching files or folders.",
+    "找不到這個檔案。": "This file could not be found.",
     "拖到 Finder 下載": "Drag to Finder to download",
+    "拖到資料夾移動": "Drag onto a folder to move",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "Drop files or folders here or onto a folder below",
+    "拖曳調整預覽大小，雙擊還原": "Drag to resize. Double-click to reset.",
     "搜尋": "Search",
     "搜尋中": "Searching",
     "搜尋中 ·": "Searching ·",
@@ -145,6 +157,7 @@ UI_TRANSLATIONS = {
     "日誌": "Log",
     "更新中斷": "Update interrupted",
     "最後修改": "Last modified",
+    "最近開啟": "Recently opened",
     "本機資料夾": "Local folder",
     "根據內容搜尋": "Search file contents",
     "標籤": "Tags",
@@ -155,13 +168,17 @@ UI_TRANSLATIONS = {
     "檔案上傳進度": "File upload progress",
     "檔案傳輸未完成": "The file transfer did not finish",
     "檔案內容": "File contents",
+    "檔案已在這個資料夾": "The file is already in this folder.",
     "檔案已變更，請重新整理後再試": "The file changed. Refresh and try again.",
     "檔案已變更，請重新載入後再試": "The file changed. Reload and try again.",
     "檔案或資料夾已移動或不存在。": "The file or folder moved or no longer exists.",
     "檔案會移到伺服器的回收區，可以再移回原處。": "The file will be moved to the server Trash. You can restore it later.",
     "檔案標籤": "File tags",
+    "檔案正在移動。": "A file move is already in progress.",
     "檔案與回收區位於不同檔案系統，無法移動": "The file and Trash are on different file systems",
+    "檔案與目標資料夾位於不同檔案系統，請改用下載和上傳": "The file and destination are on different file systems. Download and upload the file to move it.",
     "檔案路徑、名稱或修改時間無效": "Invalid file path, name, or modification time",
+    "檔案路徑、目標資料夾或修改時間無效": "Invalid file path, destination folder, or modification time.",
     "檔案路徑或修改時間無效": "Invalid file path or modification time",
     "檔案路徑無效": "Invalid file path",
     "檔案預覽": "File preview",
@@ -185,7 +202,9 @@ UI_TRANSLATIONS = {
     "沒有開啟資料夾的權限": "No permission to open the folder",
     "沒有開啟這個資料夾的權限": "No permission to open this folder",
     "深色背景": "Dark appearance",
+    "清除": "Clear",
     "清除搜尋": "Clear search",
+    "清除最近開啟的紀錄": "Clear recently opened files",
     "準備資料夾": "Preparing folder",
     "瀏覽器無法讀取下載串流。": "The browser could not read the download stream.",
     "無副檔名": "No extension",
@@ -195,17 +214,22 @@ UI_TRANSLATIONS = {
     "無法儲存，草稿仍保留在編輯器中。": "Could not save. Your draft is still in the editor.",
     "無法在這個資料夾新增檔案": "You cannot create files in this folder",
     "無法在這裡刪除伺服器的內部檔案": "Server internal files cannot be deleted here",
+    "無法安全完成移動，請重試或從伺服器取回：": "The move could not finish safely. Retry or recover the file from the server: ",
     "無法安全完成重新命名，請重試或從伺服器取回：": "Could not safely finish renaming. Try again or recover the file from: ",
     "無法將檔案移到回收區": "Could not move the file to Trash",
     "無法建立資料夾": "Could not create the folder",
     "無法新增檔案": "Could not create the file",
     "無法更新標籤": "Could not update tags",
     "無法標記伺服器的內部檔案": "Server internal files cannot be tagged",
+    "無法確認伺服器連線，請重新整理頁面。": "Could not confirm the server connection. Refresh this page.",
+    "無法移動伺服器的內部檔案": "Server internal files cannot be moved.",
+    "無法移動檔案。": "Could not move the file.",
     "無法編輯伺服器的內部檔案": "Server internal files cannot be edited",
     "無法處理上傳項目": "Could not process upload items",
     "無法讀取檔案。": "Could not read the file.",
     "無法讀取檔案名稱、大小或上傳路徑": "Could not read the file name, size, or upload path",
     "無法讀取檔案大小": "Could not read the file size",
+    "無法載入資料夾。": "Could not load the folder.",
     "無法載入預覽，可開啟或下載檔案。": "Could not load the preview. You can open or download the file.",
     "無法重新命名回收區或上傳中的檔案": "Files in Trash or being uploaded cannot be renamed",
     "無法重新命名檔案": "Could not rename the file",
@@ -217,11 +241,18 @@ UI_TRANSLATIONS = {
     "白色背景": "Light appearance",
     "的標籤": "tags",
     "目前只支援編輯 .py、.md 和 .txt 檔案": "Only .py, .md, and .txt files can be edited",
+    "目前連線的伺服器已變更，請重新整理頁面。": "The connected server changed. Refresh this page.",
     "目標資料夾不存在或無法開啟": "The destination folder is missing or cannot be opened",
     "目標資料夾無法建立": "Could not create the destination folder",
+    "目的地資料夾": "Destination folders",
     "直接下載": "Download directly",
     "直欄": "Columns",
     "移到回收區": "Move to trash",
+    "移到這裡": "Move here",
+    "移動 {name}": "Move {name}",
+    "移動到資料夾": "Move to folder",
+    "移動檔案失敗。": "Could not move the file.",
+    "移動檔案的請求必須是空的": "The file move request must have an empty body.",
     "種類": "Kind",
     "紅色": "Red",
     "純文字": "Plain text",
@@ -236,6 +267,7 @@ UI_TRANSLATIONS = {
     "複製伺服器路徑": "Copy server path",
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "Close the editor and discard unsaved changes?",
     "設定": "Settings",
+    "調整預覽大小": "Resize preview",
     "請一次執行一個檔案操作": "Run one file operation at a time",
     "請從「伺服器檔案」頁操作": "Run this action from Server Files",
     "請手動複製這個伺服器路徑": "Copy this server path manually",
@@ -256,6 +288,7 @@ UI_TRANSLATIONS = {
     "這個檔案含有 NUL 字元，無法當作純文字編輯": "This file contains a NUL character and cannot be edited as plain text",
     "這個檔案沒有可顯示的文字。": "This file has no text to display.",
     "這個資料夾可以用 ZIP 下載。": "You can download this folder as a ZIP.",
+    "這個資料夾沒有子資料夾。": "This folder has no subfolders.",
     "這個資料夾目前沒有可預覽的檔案。": "This folder has no previewable files.",
     "連線中斷，請再試一次": "Connection lost. Try again.",
     "選擇儲存位置": "Choose save location",
@@ -267,6 +300,8 @@ UI_TRANSLATIONS = {
     "重新命名檔案": "Rename file",
     "重新命名請求必須是空的": "A rename request must have an empty body",
     "重新命名，或拖到 Finder 下載": "Rename, or drag to Finder to download",
+    "重新命名，或拖到資料夾移動": "Rename or drag onto a folder to move",
+    "重新命名，拖到資料夾移動，或拖到 Finder 下載": "Rename, drag onto a folder to move, or drag to Finder to download",
     "開啟完整檔案": "Open full file",
     "關閉": "Close",
     "關閉預覽": "Close preview",
@@ -274,6 +309,7 @@ UI_TRANSLATIONS = {
     "隱藏點檔案": "Hide hidden files",
     "項失敗": "items failed",
     "預覽 {name}": "Preview {name}",
+    "顯示最近開啟的檔案": "Show recently opened files",
     "顯示隱藏檔": "Show hidden files",
     "：無法讀取": ": Could not read"
   },
@@ -306,10 +342,12 @@ UI_TRANSLATIONS = {
     "伺服器無法將檔案移到回收區": "サーバーでファイルをごみ箱に移動できませんでした",
     "伺服器無法建立資料夾": "サーバーでフォルダを作成できませんでした",
     "伺服器無法新增檔案": "サーバーでファイルを作成できませんでした",
+    "伺服器無法移動檔案": "サーバーでファイルを移動できませんでした。",
     "伺服器無法讀取或儲存檔案": "サーバーでファイルを読み込むか保存できませんでした",
     "伺服器無法讀取這個下載項目（": "サーバーでダウンロード項目を読み込めません（",
     "伺服器無法重新命名檔案": "サーバーでファイル名を変更できませんでした",
     "伺服器的檔案系統不支援不覆寫的重新命名": "サーバーのファイルシステムは上書きしない名前の変更に対応していません",
+    "伺服器的檔案系統不支援安全移動": "サーバーのファイルシステムは安全な移動をサポートしていません。",
     "伺服器路徑": "サーバーパス",
     "位元組": "バイト",
     "例如 analysis.py": "例：analysis.py",
@@ -331,6 +369,7 @@ UI_TRANSLATIONS = {
     "取消": "キャンセル",
     "另存副本": "コピーを保存",
     "只支援 UTF-8 純文字": "UTF-8 のプレーンテキストのみ対応しています",
+    "只能移動一般檔案": "通常のファイルのみ移動できます。",
     "只能移動一般檔案到回收區": "通常のファイルのみごみ箱に移動できます",
     "只能重新命名一般檔案": "通常のファイルのみ名前を変更できます",
     "可編輯檔案上限為 2 MiB": "編集できるファイルは 2 MiB までです",
@@ -347,6 +386,8 @@ UI_TRANSLATIONS = {
     "將 {name} 移到回收區": "{name} をごみ箱へ移動",
     "將檔案移到回收區？": "ファイルをごみ箱に移動しますか？",
     "尚未儲存": "未保存の変更",
+    "尚未開啟檔案": "開いたファイルはまだありません",
+    "工作區根目錄": "ワークスペースのルート",
     "已上傳": "アップロード完了",
     "已下載": "ダウンロード完了",
     "已下載資料夾": "フォルダのダウンロード完了",
@@ -356,25 +397,32 @@ UI_TRANSLATIONS = {
     "已取消下載，本機可能有部分檔案。": "ダウンロードをキャンセルしました。一部のファイルがこの Mac に残っている可能性があります。",
     "已在伺服器新增空白檔案": "サーバーに空のファイルを作成しました",
     "已在伺服器重新命名": "サーバー上で名前を変更しました",
+    "已復原 {name} 的移動": "{name} を元のフォルダに戻しました",
     "已更新": "更新しました",
     "已有同名檔案": "同じ名前のファイルがすでにあります",
     "已有同名檔案或資料夾": "同じ名前のファイルまたはフォルダがすでにあります",
     "已移到伺服器回收區": "サーバーのごみ箱に移動しました",
+    "已移動 {name}": "{name} を移動しました",
     "已經存在。可以略過，或保留原檔並另存一份副本。": "はすでに存在します。スキップするか、元のファイルを残してコピーを保存できます。",
     "已複製伺服器路徑": "サーバー上のパスをコピーしました",
     "已達內容搜尋上限，請在更小的資料夾搜尋。": "内容検索の上限に達しました。検索するフォルダを絞ってください。",
     "已顯示": "表示件数",
     "建立": "作成",
     "建立資料夾的請求必須是空的": "フォルダ作成リクエストの本文は空である必要があります",
+    "復原": "元に戻す",
     "快速預覽": "クイックプレビュー",
     "打包成 ZIP": "ZIP 形式でダウンロード",
     "找不到包含搜尋字詞的文字檔。": "検索語を含むテキストファイルがありません。",
     "找不到原始檔案": "元のファイルが見つかりません",
+    "找不到原始檔案或目標資料夾": "元のファイルまたは移動先フォルダが見つかりません。",
     "找不到可標記的一般檔案": "タグを付けられる通常のファイルが見つかりません",
     "找不到可編輯的一般檔案": "編集できる通常のファイルが見つかりません",
     "找不到符合的檔案或資料夾。": "一致するファイルやフォルダがありません。",
+    "找不到這個檔案。": "このファイルが見つかりません。",
     "拖到 Finder 下載": "Finder にドラッグしてダウンロード",
+    "拖到資料夾移動": "フォルダにドラッグして移動",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "ここか下のフォルダにファイルやフォルダをドロップ",
+    "拖曳調整預覽大小，雙擊還原": "ドラッグしてサイズを調整、ダブルクリックして元に戻す",
     "搜尋": "検索",
     "搜尋中": "検索中",
     "搜尋中 ·": "検索中 ·",
@@ -390,6 +438,7 @@ UI_TRANSLATIONS = {
     "日誌": "ログ",
     "更新中斷": "更新が中断されました",
     "最後修改": "最終更新",
+    "最近開啟": "最近開いたファイル",
     "本機資料夾": "ローカルフォルダ",
     "根據內容搜尋": "ファイル内容を検索",
     "標籤": "タグ",
@@ -400,13 +449,17 @@ UI_TRANSLATIONS = {
     "檔案上傳進度": "ファイルのアップロード進捗",
     "檔案傳輸未完成": "ファイル転送が完了しませんでした",
     "檔案內容": "ファイルの内容",
+    "檔案已在這個資料夾": "ファイルはすでにこのフォルダにあります。",
     "檔案已變更，請重新整理後再試": "ファイルが変更されました。更新してからもう一度お試しください。",
     "檔案已變更，請重新載入後再試": "ファイルが変更されました。再読み込みしてお試しください。",
     "檔案或資料夾已移動或不存在。": "ファイルまたはフォルダが移動されたか、存在しません。",
     "檔案會移到伺服器的回收區，可以再移回原處。": "ファイルはサーバーのごみ箱に移動します。後で元の場所に戻せます。",
     "檔案標籤": "ファイルのタグ",
+    "檔案正在移動。": "ファイルを移動中です。",
     "檔案與回收區位於不同檔案系統，無法移動": "ファイルとごみ箱が異なるファイルシステムにあるため移動できません",
+    "檔案與目標資料夾位於不同檔案系統，請改用下載和上傳": "ファイルと移動先は異なるファイルシステム上にあります。ダウンロードしてからアップロードしてください。",
     "檔案路徑、名稱或修改時間無效": "ファイルのパス、名前、または更新日時が無効です",
+    "檔案路徑、目標資料夾或修改時間無效": "ファイルのパス、移動先フォルダ、または更新日時が無効です。",
     "檔案路徑或修改時間無效": "ファイルのパスまたは更新日時が無効です",
     "檔案路徑無效": "ファイルのパスが無効です",
     "檔案預覽": "ファイルのプレビュー",
@@ -430,7 +483,9 @@ UI_TRANSLATIONS = {
     "沒有開啟資料夾的權限": "フォルダを開く権限がありません",
     "沒有開啟這個資料夾的權限": "このフォルダを開く権限がありません",
     "深色背景": "ダーク",
+    "清除": "消去",
     "清除搜尋": "検索をクリア",
+    "清除最近開啟的紀錄": "最近開いた履歴を消去",
     "準備資料夾": "フォルダを準備中",
     "瀏覽器無法讀取下載串流。": "ブラウザでダウンロードストリームを読み込めません。",
     "無副檔名": "拡張子なし",
@@ -440,17 +495,22 @@ UI_TRANSLATIONS = {
     "無法儲存，草稿仍保留在編輯器中。": "保存できませんでした。下書きはエディタに残っています。",
     "無法在這個資料夾新增檔案": "このフォルダにはファイルを作成できません",
     "無法在這裡刪除伺服器的內部檔案": "サーバーの内部ファイルはここから削除できません",
+    "無法安全完成移動，請重試或從伺服器取回：": "安全に移動を完了できませんでした。再試行するか、サーバーから回収してください：",
     "無法安全完成重新命名，請重試或從伺服器取回：": "安全に名前を変更できませんでした。再試行するか、サーバーからファイルを取得してください：",
     "無法將檔案移到回收區": "ファイルをごみ箱に移動できませんでした",
     "無法建立資料夾": "フォルダを作成できませんでした",
     "無法新增檔案": "ファイルを作成できませんでした",
     "無法更新標籤": "タグを更新できませんでした",
     "無法標記伺服器的內部檔案": "サーバーの内部ファイルにはタグを付けられません",
+    "無法確認伺服器連線，請重新整理頁面。": "サーバーへの接続を確認できませんでした。このページを更新してください。",
+    "無法移動伺服器的內部檔案": "サーバーの内部ファイルは移動できません。",
+    "無法移動檔案。": "ファイルを移動できませんでした。",
     "無法編輯伺服器的內部檔案": "サーバーの内部ファイルは編集できません",
     "無法處理上傳項目": "アップロード項目を処理できませんでした",
     "無法讀取檔案。": "ファイルを読み込めませんでした。",
     "無法讀取檔案名稱、大小或上傳路徑": "ファイル名、サイズ、またはアップロード先を読み込めませんでした",
     "無法讀取檔案大小": "ファイルサイズを読み込めませんでした",
+    "無法載入資料夾。": "フォルダを読み込めませんでした。",
     "無法載入預覽，可開啟或下載檔案。": "プレビューを読み込めませんでした。ファイルを開くかダウンロードできます。",
     "無法重新命名回收區或上傳中的檔案": "ごみ箱内またはアップロード中のファイルは名前を変更できません",
     "無法重新命名檔案": "ファイル名を変更できませんでした",
@@ -462,11 +522,18 @@ UI_TRANSLATIONS = {
     "白色背景": "ライト",
     "的標籤": "のタグ",
     "目前只支援編輯 .py、.md 和 .txt 檔案": ".py、.md、.txt のファイルのみ編集できます",
+    "目前連線的伺服器已變更，請重新整理頁面。": "接続先のサーバーが変わりました。このページを更新してください。",
     "目標資料夾不存在或無法開啟": "保存先フォルダが存在しないか、開けません",
     "目標資料夾無法建立": "保存先フォルダを作成できませんでした",
+    "目的地資料夾": "移動先フォルダ",
     "直接下載": "直接ダウンロード",
     "直欄": "カラム",
     "移到回收區": "ごみ箱へ移動",
+    "移到這裡": "ここに移動",
+    "移動 {name}": "{name} を移動",
+    "移動到資料夾": "フォルダに移動",
+    "移動檔案失敗。": "ファイルを移動できませんでした。",
+    "移動檔案的請求必須是空的": "ファイル移動リクエストの本文は空にしてください。",
     "種類": "種類",
     "紅色": "赤",
     "純文字": "プレーンテキスト",
@@ -481,6 +548,7 @@ UI_TRANSLATIONS = {
     "複製伺服器路徑": "サーバーパスをコピー",
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "エディタを閉じて未保存の変更を破棄しますか？",
     "設定": "設定",
+    "調整預覽大小": "プレビューのサイズを調整",
     "請一次執行一個檔案操作": "ファイル操作は 1 回に 1 つ実行してください",
     "請從「伺服器檔案」頁操作": "サーバーファイルのページから操作してください",
     "請手動複製這個伺服器路徑": "このサーバー上のパスを手動でコピーしてください",
@@ -501,6 +569,7 @@ UI_TRANSLATIONS = {
     "這個檔案含有 NUL 字元，無法當作純文字編輯": "NUL 文字が含まれるためプレーンテキストとして編集できません",
     "這個檔案沒有可顯示的文字。": "表示できるテキストがありません。",
     "這個資料夾可以用 ZIP 下載。": "このフォルダは ZIP 形式でダウンロードできます。",
+    "這個資料夾沒有子資料夾。": "このフォルダにサブフォルダはありません。",
     "這個資料夾目前沒有可預覽的檔案。": "このフォルダにプレビューできるファイルがありません。",
     "連線中斷，請再試一次": "接続が切断されました。もう一度お試しください。",
     "選擇儲存位置": "保存先を選択",
@@ -512,6 +581,8 @@ UI_TRANSLATIONS = {
     "重新命名檔案": "ファイル名を変更",
     "重新命名請求必須是空的": "名前変更リクエストの本文は空である必要があります",
     "重新命名，或拖到 Finder 下載": "名前を変更、または Finder にドラッグしてダウンロード",
+    "重新命名，或拖到資料夾移動": "名前を変更するか、フォルダにドラッグして移動",
+    "重新命名，拖到資料夾移動，或拖到 Finder 下載": "名前を変更、フォルダにドラッグして移動、または Finder にドラッグしてダウンロード",
     "開啟完整檔案": "ファイルを開く",
     "關閉": "閉じる",
     "關閉預覽": "プレビューを閉じる",
@@ -519,6 +590,7 @@ UI_TRANSLATIONS = {
     "隱藏點檔案": "隠しファイルを非表示",
     "項失敗": "件が失敗",
     "預覽 {name}": "{name} をプレビュー",
+    "顯示最近開啟的檔案": "最近開いたファイルを表示",
     "顯示隱藏檔": "隠しファイルを表示",
     "：無法讀取": "：読み込めませんでした"
   },
@@ -551,10 +623,12 @@ UI_TRANSLATIONS = {
     "伺服器無法將檔案移到回收區": "서버가 파일을 휴지통으로 이동할 수 없습니다",
     "伺服器無法建立資料夾": "서버가 폴더를 만들 수 없습니다",
     "伺服器無法新增檔案": "서버가 파일을 만들 수 없습니다",
+    "伺服器無法移動檔案": "서버에서 파일을 이동하지 못했습니다.",
     "伺服器無法讀取或儲存檔案": "서버가 파일을 읽거나 저장할 수 없습니다",
     "伺服器無法讀取這個下載項目（": "서버가 다운로드 항목을 읽을 수 없습니다 (",
     "伺服器無法重新命名檔案": "서버가 파일 이름을 바꿀 수 없습니다",
     "伺服器的檔案系統不支援不覆寫的重新命名": "서버 파일 시스템은 덮어쓰지 않는 이름 변경을 지원하지 않습니다",
+    "伺服器的檔案系統不支援安全移動": "서버의 파일 시스템에서 안전한 이동을 지원하지 않습니다.",
     "伺服器路徑": "서버 경로",
     "位元組": "바이트",
     "例如 analysis.py": "예: analysis.py",
@@ -576,6 +650,7 @@ UI_TRANSLATIONS = {
     "取消": "취소",
     "另存副本": "사본 저장",
     "只支援 UTF-8 純文字": "UTF-8 일반 텍스트만 지원합니다",
+    "只能移動一般檔案": "일반 파일만 이동할 수 있습니다.",
     "只能移動一般檔案到回收區": "일반 파일만 휴지통으로 이동할 수 있습니다",
     "只能重新命名一般檔案": "일반 파일만 이름을 바꿀 수 있습니다",
     "可編輯檔案上限為 2 MiB": "편집 가능한 파일은 최대 2 MiB입니다",
@@ -592,6 +667,8 @@ UI_TRANSLATIONS = {
     "將 {name} 移到回收區": "{name} 휴지통으로 이동",
     "將檔案移到回收區？": "파일을 휴지통으로 이동할까요?",
     "尚未儲存": "저장하지 않은 변경 사항",
+    "尚未開啟檔案": "아직 연 파일이 없습니다",
+    "工作區根目錄": "작업 공간 루트",
     "已上傳": "업로드 완료",
     "已下載": "다운로드 완료",
     "已下載資料夾": "폴더 다운로드 완료",
@@ -601,25 +678,32 @@ UI_TRANSLATIONS = {
     "已取消下載，本機可能有部分檔案。": "다운로드를 취소했습니다. 일부 파일이 이 Mac에 남아 있을 수 있습니다.",
     "已在伺服器新增空白檔案": "서버에 빈 파일을 만들었습니다",
     "已在伺服器重新命名": "서버에서 이름을 바꿨습니다",
+    "已復原 {name} 的移動": "{name} 파일을 원래 폴더로 되돌렸습니다",
     "已更新": "업데이트했습니다",
     "已有同名檔案": "같은 이름의 파일이 이미 있습니다",
     "已有同名檔案或資料夾": "같은 이름의 파일 또는 폴더가 이미 있습니다",
     "已移到伺服器回收區": "서버 휴지통으로 이동했습니다",
+    "已移動 {name}": "{name} 파일을 이동했습니다",
     "已經存在。可以略過，或保留原檔並另存一份副本。": "이(가) 이미 있습니다. 건너뛰거나 원본을 유지하고 사본을 저장할 수 있습니다.",
     "已複製伺服器路徑": "서버 경로를 복사했습니다",
     "已達內容搜尋上限，請在更小的資料夾搜尋。": "내용 검색 한도에 도달했습니다. 더 작은 폴더에서 검색하세요.",
     "已顯示": "표시 중",
     "建立": "만듦",
     "建立資料夾的請求必須是空的": "폴더 생성 요청의 본문은 비어 있어야 합니다",
+    "復原": "실행 취소",
     "快速預覽": "빠른 미리보기",
     "打包成 ZIP": "ZIP으로 다운로드",
     "找不到包含搜尋字詞的文字檔。": "검색어가 포함된 텍스트 파일이 없습니다.",
     "找不到原始檔案": "원본 파일을 찾을 수 없습니다",
+    "找不到原始檔案或目標資料夾": "원본 파일 또는 대상 폴더를 찾을 수 없습니다.",
     "找不到可標記的一般檔案": "태그를 지정할 일반 파일을 찾을 수 없습니다",
     "找不到可編輯的一般檔案": "편집할 일반 파일을 찾을 수 없습니다",
     "找不到符合的檔案或資料夾。": "일치하는 파일이나 폴더가 없습니다.",
+    "找不到這個檔案。": "이 파일을 찾을 수 없습니다.",
     "拖到 Finder 下載": "Finder로 드래그하여 다운로드",
+    "拖到資料夾移動": "폴더로 드래그하여 이동",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "여기 또는 아래 폴더로 파일이나 폴더를 끌어오세요",
+    "拖曳調整預覽大小，雙擊還原": "드래그하여 크기 조절, 두 번 클릭하여 초기화",
     "搜尋": "검색",
     "搜尋中": "검색 중",
     "搜尋中 ·": "검색 중 ·",
@@ -635,6 +719,7 @@ UI_TRANSLATIONS = {
     "日誌": "로그",
     "更新中斷": "업데이트 중단됨",
     "最後修改": "마지막 수정",
+    "最近開啟": "최근에 연 파일",
     "本機資料夾": "로컬 폴더",
     "根據內容搜尋": "파일 내용 검색",
     "標籤": "태그",
@@ -645,13 +730,17 @@ UI_TRANSLATIONS = {
     "檔案上傳進度": "파일 업로드 진행 상황",
     "檔案傳輸未完成": "파일 전송을 완료하지 못했습니다",
     "檔案內容": "파일 내용",
+    "檔案已在這個資料夾": "파일이 이미 이 폴더에 있습니다.",
     "檔案已變更，請重新整理後再試": "파일이 변경되었습니다. 새로 고침 후 다시 시도하세요.",
     "檔案已變更，請重新載入後再試": "파일이 변경되었습니다. 다시 불러온 후 시도하세요.",
     "檔案或資料夾已移動或不存在。": "파일 또는 폴더가 이동되었거나 존재하지 않습니다.",
     "檔案會移到伺服器的回收區，可以再移回原處。": "파일이 서버 휴지통으로 이동합니다. 나중에 복원할 수 있습니다.",
     "檔案標籤": "파일 태그",
+    "檔案正在移動。": "파일 이동이 진행 중입니다.",
     "檔案與回收區位於不同檔案系統，無法移動": "파일과 휴지통이 서로 다른 파일 시스템에 있어 이동할 수 없습니다",
+    "檔案與目標資料夾位於不同檔案系統，請改用下載和上傳": "파일과 대상 폴더가 서로 다른 파일 시스템에 있습니다. 파일을 다운로드한 뒤 업로드하세요.",
     "檔案路徑、名稱或修改時間無效": "파일 경로, 이름 또는 수정 시간이 잘못되었습니다",
+    "檔案路徑、目標資料夾或修改時間無效": "파일 경로, 대상 폴더 또는 수정 날짜가 올바르지 않습니다.",
     "檔案路徑或修改時間無效": "파일 경로 또는 수정 시간이 잘못되었습니다",
     "檔案路徑無效": "파일 경로가 잘못되었습니다",
     "檔案預覽": "파일 미리보기",
@@ -675,7 +764,9 @@ UI_TRANSLATIONS = {
     "沒有開啟資料夾的權限": "폴더를 열 권한이 없습니다",
     "沒有開啟這個資料夾的權限": "이 폴더를 열 권한이 없습니다",
     "深色背景": "어두운 테마",
+    "清除": "지우기",
     "清除搜尋": "검색 지우기",
+    "清除最近開啟的紀錄": "최근에 연 파일 기록 지우기",
     "準備資料夾": "폴더 준비 중",
     "瀏覽器無法讀取下載串流。": "브라우저가 다운로드 스트림을 읽을 수 없습니다.",
     "無副檔名": "확장자 없음",
@@ -685,17 +776,22 @@ UI_TRANSLATIONS = {
     "無法儲存，草稿仍保留在編輯器中。": "저장할 수 없습니다. 초안은 편집기에 남아 있습니다.",
     "無法在這個資料夾新增檔案": "이 폴더에 파일을 만들 수 없습니다",
     "無法在這裡刪除伺服器的內部檔案": "여기서는 서버 내부 파일을 삭제할 수 없습니다",
+    "無法安全完成移動，請重試或從伺服器取回：": "파일 이동을 안전하게 완료하지 못했습니다. 다시 시도하거나 서버에서 파일을 복구하세요: ",
     "無法安全完成重新命名，請重試或從伺服器取回：": "이름을 안전하게 바꿀 수 없습니다. 다시 시도하거나 서버에서 파일을 복구하세요: ",
     "無法將檔案移到回收區": "파일을 휴지통으로 이동할 수 없습니다",
     "無法建立資料夾": "폴더를 만들 수 없습니다",
     "無法新增檔案": "파일을 만들 수 없습니다",
     "無法更新標籤": "태그를 업데이트할 수 없습니다",
     "無法標記伺服器的內部檔案": "서버 내부 파일에는 태그를 지정할 수 없습니다",
+    "無法確認伺服器連線，請重新整理頁面。": "서버 연결을 확인할 수 없습니다. 이 페이지를 새로 고침하세요.",
+    "無法移動伺服器的內部檔案": "서버의 내부 파일은 이동할 수 없습니다.",
+    "無法移動檔案。": "파일을 이동하지 못했습니다.",
     "無法編輯伺服器的內部檔案": "서버 내부 파일은 편집할 수 없습니다",
     "無法處理上傳項目": "업로드 항목을 처리할 수 없습니다",
     "無法讀取檔案。": "파일을 읽을 수 없습니다.",
     "無法讀取檔案名稱、大小或上傳路徑": "파일 이름, 크기 또는 업로드 경로를 읽을 수 없습니다",
     "無法讀取檔案大小": "파일 크기를 읽을 수 없습니다",
+    "無法載入資料夾。": "폴더를 불러오지 못했습니다.",
     "無法載入預覽，可開啟或下載檔案。": "미리보기를 불러올 수 없습니다. 파일을 열거나 다운로드할 수 있습니다.",
     "無法重新命名回收區或上傳中的檔案": "휴지통에 있거나 업로드 중인 파일의 이름을 바꿀 수 없습니다",
     "無法重新命名檔案": "파일 이름을 바꿀 수 없습니다",
@@ -707,11 +803,18 @@ UI_TRANSLATIONS = {
     "白色背景": "밝은 테마",
     "的標籤": "태그",
     "目前只支援編輯 .py、.md 和 .txt 檔案": ".py, .md, .txt 파일만 편집할 수 있습니다",
+    "目前連線的伺服器已變更，請重新整理頁面。": "연결된 서버가 변경되었습니다. 이 페이지를 새로 고침하세요.",
     "目標資料夾不存在或無法開啟": "대상 폴더가 없거나 열 수 없습니다",
     "目標資料夾無法建立": "대상 폴더를 만들 수 없습니다",
+    "目的地資料夾": "대상 폴더",
     "直接下載": "직접 다운로드",
     "直欄": "열",
     "移到回收區": "휴지통으로 이동",
+    "移到這裡": "여기로 이동",
+    "移動 {name}": "{name} 이동",
+    "移動到資料夾": "폴더로 이동",
+    "移動檔案失敗。": "파일을 이동하지 못했습니다.",
+    "移動檔案的請求必須是空的": "파일 이동 요청 본문은 비어 있어야 합니다.",
     "種類": "종류",
     "紅色": "빨강",
     "純文字": "일반 텍스트",
@@ -726,6 +829,7 @@ UI_TRANSLATIONS = {
     "複製伺服器路徑": "서버 경로 복사",
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "편집기를 닫고 저장하지 않은 변경 사항을 버릴까요?",
     "設定": "설정",
+    "調整預覽大小": "미리보기 크기 조절",
     "請一次執行一個檔案操作": "파일 작업은 한 번에 하나씩 실행하세요",
     "請從「伺服器檔案」頁操作": "서버 파일 페이지에서 실행하세요",
     "請手動複製這個伺服器路徑": "이 서버 경로를 직접 복사하세요",
@@ -746,6 +850,7 @@ UI_TRANSLATIONS = {
     "這個檔案含有 NUL 字元，無法當作純文字編輯": "NUL 문자가 있어 일반 텍스트로 편집할 수 없습니다",
     "這個檔案沒有可顯示的文字。": "표시할 텍스트가 없는 파일입니다.",
     "這個資料夾可以用 ZIP 下載。": "이 폴더를 ZIP으로 다운로드할 수 있습니다.",
+    "這個資料夾沒有子資料夾。": "이 폴더에는 하위 폴더가 없습니다.",
     "這個資料夾目前沒有可預覽的檔案。": "미리 볼 수 있는 파일이 없습니다.",
     "連線中斷，請再試一次": "연결이 끊겼습니다. 다시 시도하세요.",
     "選擇儲存位置": "저장 위치 선택",
@@ -757,6 +862,8 @@ UI_TRANSLATIONS = {
     "重新命名檔案": "파일 이름 바꾸기",
     "重新命名請求必須是空的": "이름 변경 요청의 본문은 비어 있어야 합니다",
     "重新命名，或拖到 Finder 下載": "이름을 바꾸거나 Finder로 드래그하여 다운로드",
+    "重新命名，或拖到資料夾移動": "이름을 바꾸거나 폴더로 드래그하여 이동",
+    "重新命名，拖到資料夾移動，或拖到 Finder 下載": "이름을 바꾸거나 폴더로 드래그하여 이동 또는 Finder로 드래그하여 다운로드",
     "開啟完整檔案": "전체 파일 열기",
     "關閉": "닫기",
     "關閉預覽": "미리보기 닫기",
@@ -764,6 +871,7 @@ UI_TRANSLATIONS = {
     "隱藏點檔案": "숨겨진 파일 숨기기",
     "項失敗": "개 항목 실패",
     "預覽 {name}": "{name} 미리보기",
+    "顯示最近開啟的檔案": "최근에 연 파일 표시",
     "顯示隱藏檔": "숨겨진 파일 표시",
     "：無法讀取": ": 읽을 수 없습니다"
   },
@@ -796,10 +904,12 @@ UI_TRANSLATIONS = {
     "伺服器無法將檔案移到回收區": "服务器无法将文件移到回收站",
     "伺服器無法建立資料夾": "服务器无法创建文件夹",
     "伺服器無法新增檔案": "服务器无法新建文件",
+    "伺服器無法移動檔案": "服务器无法移动文件。",
     "伺服器無法讀取或儲存檔案": "服务器无法读取或保存文件",
     "伺服器無法讀取這個下載項目（": "服务器无法读取此下载项（",
     "伺服器無法重新命名檔案": "服务器无法重命名文件",
     "伺服器的檔案系統不支援不覆寫的重新命名": "服务器的文件系统不支持不覆盖的重命名",
+    "伺服器的檔案系統不支援安全移動": "服务器的文件系统不支持安全移动。",
     "伺服器路徑": "服务器路径",
     "位元組": "字节",
     "例如 analysis.py": "例如 analysis.py",
@@ -821,6 +931,7 @@ UI_TRANSLATIONS = {
     "取消": "取消",
     "另存副本": "另存副本",
     "只支援 UTF-8 純文字": "仅支持 UTF-8 纯文本",
+    "只能移動一般檔案": "只能移动普通文件。",
     "只能移動一般檔案到回收區": "只能将普通文件移到回收站",
     "只能重新命名一般檔案": "只能重命名普通文件",
     "可編輯檔案上限為 2 MiB": "可编辑文件上限为 2 MiB",
@@ -837,6 +948,8 @@ UI_TRANSLATIONS = {
     "將 {name} 移到回收區": "将 {name} 移到回收站",
     "將檔案移到回收區？": "将文件移到回收站？",
     "尚未儲存": "尚未保存",
+    "尚未開啟檔案": "尚未打开文件",
+    "工作區根目錄": "工作区根目录",
     "已上傳": "已上传",
     "已下載": "已下载",
     "已下載資料夾": "已下载文件夹",
@@ -846,25 +959,32 @@ UI_TRANSLATIONS = {
     "已取消下載，本機可能有部分檔案。": "已取消下载，本机可能有部分文件。",
     "已在伺服器新增空白檔案": "已在服务器新建空白文件",
     "已在伺服器重新命名": "已在服务器重命名",
+    "已復原 {name} 的移動": "已撤销 {name} 的移动",
     "已更新": "已更新",
     "已有同名檔案": "已有同名文件",
     "已有同名檔案或資料夾": "已有同名文件或文件夹",
     "已移到伺服器回收區": "已移到服务器回收站",
+    "已移動 {name}": "已移动 {name}",
     "已經存在。可以略過，或保留原檔並另存一份副本。": "已经存在。可以跳过，或保留原文件并另存一份副本。",
     "已複製伺服器路徑": "已复制服务器路径",
     "已達內容搜尋上限，請在更小的資料夾搜尋。": "已达到内容搜索上限，请缩小搜索范围。",
     "已顯示": "已显示",
     "建立": "创建",
     "建立資料夾的請求必須是空的": "创建文件夹请求的正文必须为空",
+    "復原": "撤销",
     "快速預覽": "快速预览",
     "打包成 ZIP": "打包成 ZIP",
     "找不到包含搜尋字詞的文字檔。": "没有找到包含搜索词的文本文件。",
     "找不到原始檔案": "找不到原始文件",
+    "找不到原始檔案或目標資料夾": "找不到原始文件或目标文件夹。",
     "找不到可標記的一般檔案": "找不到可添加标签的普通文件",
     "找不到可編輯的一般檔案": "找不到可编辑的普通文件",
     "找不到符合的檔案或資料夾。": "没有找到匹配的文件或文件夹。",
+    "找不到這個檔案。": "找不到此文件。",
     "拖到 Finder 下載": "拖到 Finder 下载",
+    "拖到資料夾移動": "拖到文件夹移动",
     "拖曳檔案或資料夾到這裡，也可拖到下方的資料夾": "将文件或文件夹拖到这里，也可拖到下方文件夹",
+    "拖曳調整預覽大小，雙擊還原": "拖动调整预览大小，双击还原",
     "搜尋": "搜索",
     "搜尋中": "搜索中",
     "搜尋中 ·": "搜索中 ·",
@@ -880,6 +1000,7 @@ UI_TRANSLATIONS = {
     "日誌": "日志",
     "更新中斷": "更新中断",
     "最後修改": "最后修改",
+    "最近開啟": "最近打开",
     "本機資料夾": "本机文件夹",
     "根據內容搜尋": "搜索文件内容",
     "標籤": "标签",
@@ -890,13 +1011,17 @@ UI_TRANSLATIONS = {
     "檔案上傳進度": "文件上传进度",
     "檔案傳輸未完成": "文件传输未完成",
     "檔案內容": "文件内容",
+    "檔案已在這個資料夾": "文件已经在这个文件夹中。",
     "檔案已變更，請重新整理後再試": "文件已更改，请刷新后重试。",
     "檔案已變更，請重新載入後再試": "文件已更改，请重新加载后重试。",
     "檔案或資料夾已移動或不存在。": "文件或文件夹已移动或不存在。",
     "檔案會移到伺服器的回收區，可以再移回原處。": "文件会移到服务器回收站，可以再移回原处。",
     "檔案標籤": "文件标签",
+    "檔案正在移動。": "正在移动文件。",
     "檔案與回收區位於不同檔案系統，無法移動": "文件与回收站位于不同文件系统，无法移动",
+    "檔案與目標資料夾位於不同檔案系統，請改用下載和上傳": "文件与目标文件夹位于不同文件系统，请改用下载和上传。",
     "檔案路徑、名稱或修改時間無效": "文件路径、名称或修改时间无效",
+    "檔案路徑、目標資料夾或修改時間無效": "文件路径、目标文件夹或修改时间无效。",
     "檔案路徑或修改時間無效": "文件路径或修改时间无效",
     "檔案路徑無效": "文件路径无效",
     "檔案預覽": "文件预览",
@@ -920,7 +1045,9 @@ UI_TRANSLATIONS = {
     "沒有開啟資料夾的權限": "没有打开文件夹的权限",
     "沒有開啟這個資料夾的權限": "没有打开此文件夹的权限",
     "深色背景": "深色背景",
+    "清除": "清除",
     "清除搜尋": "清除搜索",
+    "清除最近開啟的紀錄": "清除最近打开的记录",
     "準備資料夾": "准备文件夹",
     "瀏覽器無法讀取下載串流。": "浏览器无法读取下载流。",
     "無副檔名": "无扩展名",
@@ -930,17 +1057,22 @@ UI_TRANSLATIONS = {
     "無法儲存，草稿仍保留在編輯器中。": "无法保存，草稿仍保留在编辑器中。",
     "無法在這個資料夾新增檔案": "无法在此文件夹新建文件",
     "無法在這裡刪除伺服器的內部檔案": "无法在此删除服务器的内部文件",
+    "無法安全完成移動，請重試或從伺服器取回：": "无法安全完成移动，请重试或从服务器取回：",
     "無法安全完成重新命名，請重試或從伺服器取回：": "无法安全完成重命名，请重试或从服务器取回：",
     "無法將檔案移到回收區": "无法将文件移到回收站",
     "無法建立資料夾": "无法创建文件夹",
     "無法新增檔案": "无法新建文件",
     "無法更新標籤": "无法更新标签",
     "無法標記伺服器的內部檔案": "无法为服务器的内部文件添加标签",
+    "無法確認伺服器連線，請重新整理頁面。": "无法确认服务器连接，请刷新页面。",
+    "無法移動伺服器的內部檔案": "无法移动服务器的内部文件。",
+    "無法移動檔案。": "无法移动文件。",
     "無法編輯伺服器的內部檔案": "无法编辑服务器的内部文件",
     "無法處理上傳項目": "无法处理上传项目",
     "無法讀取檔案。": "无法读取文件。",
     "無法讀取檔案名稱、大小或上傳路徑": "无法读取文件名称、大小或上传路径",
     "無法讀取檔案大小": "无法读取文件大小",
+    "無法載入資料夾。": "无法加载文件夹。",
     "無法載入預覽，可開啟或下載檔案。": "无法加载预览，可以打开或下载文件。",
     "無法重新命名回收區或上傳中的檔案": "无法重命名回收站中或正在上传的文件",
     "無法重新命名檔案": "无法重命名文件",
@@ -952,11 +1084,18 @@ UI_TRANSLATIONS = {
     "白色背景": "浅色背景",
     "的標籤": "的标签",
     "目前只支援編輯 .py、.md 和 .txt 檔案": "目前仅支持编辑 .py、.md 和 .txt 文件",
+    "目前連線的伺服器已變更，請重新整理頁面。": "当前连接的服务器已变更，请刷新页面。",
     "目標資料夾不存在或無法開啟": "目标文件夹不存在或无法打开",
     "目標資料夾無法建立": "无法创建目标文件夹",
+    "目的地資料夾": "目标文件夹",
     "直接下載": "直接下载",
     "直欄": "分栏",
     "移到回收區": "移到回收站",
+    "移到這裡": "移动到这里",
+    "移動 {name}": "移动 {name}",
+    "移動到資料夾": "移动到文件夹",
+    "移動檔案失敗。": "移动文件失败。",
+    "移動檔案的請求必須是空的": "移动文件的请求必须为空。",
     "種類": "类型",
     "紅色": "红色",
     "純文字": "纯文本",
@@ -971,6 +1110,7 @@ UI_TRANSLATIONS = {
     "複製伺服器路徑": "复制服务器路径",
     "要關閉編輯器並放棄尚未儲存的變更嗎？": "要关闭编辑器并放弃尚未保存的更改吗？",
     "設定": "设置",
+    "調整預覽大小": "调整预览大小",
     "請一次執行一個檔案操作": "请每次执行一个文件操作",
     "請從「伺服器檔案」頁操作": "请从“服务器文件”页面操作",
     "請手動複製這個伺服器路徑": "请手动复制此服务器路径",
@@ -991,6 +1131,7 @@ UI_TRANSLATIONS = {
     "這個檔案含有 NUL 字元，無法當作純文字編輯": "此文件含有 NUL 字符，无法作为纯文本编辑",
     "這個檔案沒有可顯示的文字。": "这个文件没有可显示的文字。",
     "這個資料夾可以用 ZIP 下載。": "此文件夹可以用 ZIP 下载。",
+    "這個資料夾沒有子資料夾。": "此文件夹没有子文件夹。",
     "這個資料夾目前沒有可預覽的檔案。": "此文件夹暂无可预览的文件。",
     "連線中斷，請再試一次": "连接中断，请再试一次",
     "選擇儲存位置": "选择保存位置",
@@ -1002,6 +1143,8 @@ UI_TRANSLATIONS = {
     "重新命名檔案": "重命名文件",
     "重新命名請求必須是空的": "重命名请求的正文必须为空",
     "重新命名，或拖到 Finder 下載": "重命名，或拖到 Finder 下载",
+    "重新命名，或拖到資料夾移動": "重命名，或拖到文件夹移动",
+    "重新命名，拖到資料夾移動，或拖到 Finder 下載": "重命名，拖到文件夹移动，或拖到 Finder 下载",
     "開啟完整檔案": "打开完整文件",
     "關閉": "关闭",
     "關閉預覽": "关闭预览",
@@ -1009,6 +1152,7 @@ UI_TRANSLATIONS = {
     "隱藏點檔案": "不显示隐藏文件",
     "項失敗": "项失败",
     "預覽 {name}": "预览 {name}",
+    "顯示最近開啟的檔案": "显示最近打开的文件",
     "顯示隱藏檔": "显示隐藏文件",
     "：無法讀取": "：无法读取"
   }
@@ -1668,7 +1812,8 @@ PAGE_STYLE = """
   .download-progress { position: fixed; z-index: 2; left: 20px; bottom: 20px; width: min(385px, calc(100vw - 40px)); margin: 0; box-shadow: 0 6px 20px #17263c28; }
   .download-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .download-progress-row p { min-width: 0; }
-  .file-preview { width: min(760px, calc(100vw - 28px)); padding: 16px; }
+  .file-preview { width: min(var(--preview-width, 760px), calc(100vw - 28px)); max-width: none; max-height: calc(100dvh - 28px); padding: 16px; }
+  .file-preview[open][data-resized] { display: grid; height: min(var(--preview-height), calc(100dvh - 28px)); grid-template-rows: auto minmax(0, 1fr) auto; }
   .preview-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
   .preview-titlebar h2 { overflow-wrap: anywhere; }
   .preview-close { flex: 0 0 32px; font-size: 19px; }
@@ -1687,7 +1832,19 @@ PAGE_STYLE = """
   .syntax-call, .syntax-emphasis { color: #dcdcaa; }
   .syntax-heading { font-weight: 700; }
   .syntax-link { text-decoration: underline; }
-  .preview-footer { display: flex; justify-content: flex-end; gap: 15px; margin-top: 12px; font-size: 13px; color: #314d73; }
+  .preview-footer { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px 15px; margin-top: 12px; padding-inline-end: 16px; font-size: 13px; color: #314d73; }
+  .file-preview[data-resized] .preview-content { min-height: 0; max-height: none; }
+  .file-preview[data-resized] .preview-content iframe { height: 100%; }
+  .file-preview[data-resized] .preview-content img { max-height: 100%; }
+  .file-preview.preview-resizing { user-select: none; }
+  .file-preview.preview-resizing .preview-content { pointer-events: none; }
+  .preview-resize {
+    position: absolute; inset-inline-end: 4px; inset-block-end: 4px;
+    display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0;
+    border-radius: 5px; color: var(--theme-muted); background: transparent;
+    touch-action: none; cursor: nwse-resize;
+  }
+  .preview-resize:hover, .preview-resize:focus-visible { color: var(--theme-text); background: var(--theme-hover); }
   .file-editor { width: min(1060px, calc(100vw - 28px)); height: min(80vh, 780px); max-height: calc(100vh - 24px); padding: 0; overflow: hidden; border: 1px solid #48484a; background: #1e1e1e; color: #e2e2e2; box-shadow: 0 18px 60px #11182766; color-scheme: dark; }
   .file-editor[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
   .file-editor::backdrop { background: #101b2caa; }
@@ -1848,6 +2005,7 @@ PAGE_STYLE = """
 FILE_VIEW_STYLE = """
   header { overflow: visible; z-index: 2; }
   .display-picker { position: relative; flex-shrink: 0; }
+  .display-picker[open] { z-index: 1; }
   .mast .remote-identity, .mast .home-link { margin-left: 0; }
   .mast .home-link { flex-shrink: 0; }
   .mast .remote-identity { margin-inline-start: 4px; }
@@ -1981,6 +2139,158 @@ FILE_VIEW_STYLE = """
   }
 """
 
+RECENT_FILES_STYLE = """
+  .theme-picker .display-options:has(.recent-toggle) { max-inline-size: min(248px, calc(100vw - 32px)); }
+  .recent-toggle {
+    display: flex; align-items: center; gap: 8px; margin-block-start: 4px; padding: 8px 9px;
+    border-radius: 6px; font-size: 13px; font-weight: 600; line-height: 1.35; cursor: pointer;
+  }
+  .recent-toggle:hover, .recent-toggle:focus-within { background: var(--theme-hover); }
+  .recent-toggle input { flex: none; margin: 0; accent-color: var(--theme-focus); }
+  .recent-toggle span { min-width: 0; overflow-wrap: anywhere; }
+  main.wrap:has(> .recent-files) { position: relative; }
+  .recent-files:not([hidden]) { min-width: 0; margin: 0 0 17px; }
+  .recent-files-heading {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 3px 6px; margin-block-end: 8px;
+  }
+  .recent-files-heading h2 { color: var(--theme-text); font-size: 13px; }
+  .recent-files-heading button {
+    padding: 3px 6px; border: 1px solid transparent; border-radius: 5px; background: transparent;
+    color: var(--theme-muted); font: inherit; font-size: 11px; cursor: pointer;
+  }
+  .recent-files-heading button:hover {
+    border-color: var(--theme-border); background: var(--theme-hover); color: var(--theme-text);
+  }
+  .recent-files-empty { margin: 0; color: var(--theme-muted); font-size: 12px; line-height: 1.45; }
+  .recent-file-list {
+    display: flex; gap: 8px; margin: 0 -4px; padding: 4px; overflow-x: auto;
+    overscroll-behavior-inline: contain; scroll-snap-type: inline proximity;
+  }
+  .recent-file-list:empty { display: none; }
+  .recent-file-card {
+    display: grid; flex: 0 0 116px; grid-template-columns: minmax(0, 1fr); gap: 6px; min-width: 0;
+    padding: 5px; border: 1px solid var(--theme-border); border-radius: 9px;
+    background: var(--theme-surface-raised); color: var(--theme-text); box-shadow: 0 3px 8px var(--theme-shadow);
+    font: inherit; text-align: start; cursor: pointer; scroll-snap-align: start;
+    transition: background-color 150ms var(--ease), box-shadow 150ms var(--ease);
+  }
+  .recent-file-card:is(:hover, :focus-visible) { background: var(--theme-hover); }
+  .recent-file-card:focus-visible { outline: 2px solid var(--theme-focus); outline-offset: 2px; }
+  .recent-file-cover {
+    display: grid; place-items: center; height: 49px; min-width: 0; overflow: hidden;
+    border: 1px solid var(--theme-line); border-radius: 5px;
+    background: var(--theme-recessed); color: var(--theme-icon);
+  }
+  .recent-file-cover img { width: 100%; height: 100%; object-fit: contain; }
+  .recent-file-cover pre {
+    width: 100%; height: 100%; margin: 0; padding: 5px 6px; overflow: hidden;
+    font: 8px/1.4 ui-monospace, Menlo, monospace; white-space: pre;
+  }
+  .recent-file-symbol {
+    display: grid; place-items: center; min-width: 34px; min-height: 34px; padding: 3px;
+    border: 1px solid var(--theme-border); border-radius: 7px; background: var(--theme-surface-raised);
+    color: var(--theme-icon); font: 650 10px/1 ui-monospace, Menlo, monospace;
+  }
+  .recent-file-symbol svg { width: 21px; height: 21px; }
+  .recent-file-name {
+    min-width: 0; padding: 1px 2px 2px; overflow: hidden;
+    font-size: 11px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap;
+  }
+  @media (min-width: 1450px) {
+    .recent-files:not([hidden]) {
+      --recent-gutter: calc((100vw - 1110px) / 2);
+      --recent-width: clamp(126px, calc(var(--recent-gutter) - 42px), 174px);
+      position: absolute; inset-block-start: 26px;
+      inset-inline-start: calc(100% + (var(--recent-gutter) - var(--recent-width)) / 2);
+      width: var(--recent-width); margin: 0;
+    }
+    .recent-file-list { display: grid; gap: 8px; margin: 0; padding: 0; overflow: visible; }
+    .recent-file-card {
+      transform: perspective(480px) rotateY(22deg) rotateZ(.8deg);
+      transform-origin: left center; box-shadow: -3px 5px 13px var(--theme-shadow);
+      transition: transform 170ms var(--ease), background-color 150ms var(--ease), box-shadow 150ms var(--ease);
+    }
+    .recent-file-card:is(:hover, :focus-visible) {
+      transform: translateX(-5px); box-shadow: -4px 7px 16px var(--theme-shadow);
+    }
+    .recent-file-cover { height: clamp(43px, 6.1vh, 64px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .recent-file-card, .recent-file-card:is(:hover, :focus-visible) { transform: none; transition: none; }
+  }
+"""
+
+RECENT_FILES_HTML = """
+<aside class="recent-files" id="recent-files" data-recent-scope="{scope}" aria-labelledby="recent-files-heading" hidden>
+<div class="recent-files-heading"><h2 id="recent-files-heading">最近開啟</h2>
+<button type="button" data-recent-clear aria-label="清除最近開啟的紀錄" hidden>清除</button></div>
+<div class="recent-file-list" data-recent-list></div>
+<p class="recent-files-empty" data-recent-empty>尚未開啟檔案</p>
+</aside>
+"""
+
+FILE_MOVE_STYLE = """
+  :root {
+    --move-drop-edge: #81b9ff;
+    --move-drop-fill: #203e5e;
+    --move-error-edge: #f0958d;
+  }
+  html[data-theme="light"] {
+    --move-drop-edge: #2267b7;
+    --move-drop-fill: #e5f0ff;
+    --move-error-edge: #b63c37;
+  }
+  .file-move-source { opacity: .55; }
+  html [data-move-target].file-move-over,
+  html #preview-results > ul > .entry[data-move-target].file-move-over {
+    outline: 2px solid var(--move-drop-edge);
+    outline-offset: -2px;
+    background: var(--move-drop-fill);
+  }
+  .move-file-action svg, .file-move-folder svg { width: 15px; height: 15px; flex: 0 0 15px; }
+  .file-move-status:not([hidden]) {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    margin: 0 0 15px; padding: 9px 12px; border: 1px solid var(--theme-border);
+    border-inline-start: 3px solid var(--move-drop-edge); border-radius: 9px;
+    background: var(--theme-surface-raised); color: var(--theme-text);
+    font-size: 13px; overflow-wrap: anywhere;
+  }
+  .file-move-status[data-move-failed]:not([hidden]) { border-inline-start-color: var(--move-error-edge); }
+  .file-move-dialog { width: min(470px, calc(100vw - 28px)); }
+  .file-move-filename { margin: 5px 0 12px; color: var(--theme-muted); font-size: 13px; }
+  .file-move-navigation { display: flex; flex-wrap: wrap; gap: 6px; }
+  .file-move-dialog .delete-file-path { margin: 10px 0 6px; }
+  .file-move-folders {
+    max-height: min(32dvh, 220px); overflow: auto; margin: 0; padding: 3px;
+    list-style: none; border: 1px solid var(--theme-border); border-radius: 8px;
+  }
+  .file-move-folders:empty { display: none; }
+  .file-move-folder {
+    display: flex; align-items: center; gap: 8px; width: 100%; min-height: 34px;
+    padding: 6px 8px; border: 0; border-radius: 5px; background: transparent;
+    color: var(--theme-text); font: inherit; font-size: 13px; text-align: start; cursor: pointer;
+  }
+  .file-move-folder:hover:not(:disabled) { background: var(--theme-hover); }
+  .file-move-folder:focus-visible { outline-offset: -2px; }
+  .file-move-folder > span { min-width: 0; overflow-wrap: anywhere; }
+  .file-move-folder > span:last-child { margin-inline-start: auto; color: var(--theme-muted); }
+  .file-move-folder-state { margin: 6px 0; color: var(--theme-muted); font-size: 13px; }
+  .file-move-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .file-move-dialog .file-move-confirm { background: var(--theme-primary); color: var(--theme-on-primary); }
+  .file-move-dialog .file-move-confirm:hover:not(:disabled) { background: var(--theme-primary-hover); }
+  @media (min-width: 760px) {
+    html:not([data-file-view="icons"]):not([data-file-view="columns"]) #preview-results { --finder-actions: 206px; }
+    html[data-file-view="icons"] #preview-results > ul { grid-template-columns: repeat(auto-fill, minmax(min(100%, 196px), 1fr)); }
+    html[data-file-view="icons"] #preview-results .entry-actions { gap: 2px; }
+    html[data-file-view="icons"] #preview-results .entry-action { flex-basis: 24px; height: 26px; }
+  }
+  @media (forced-colors: active) {
+    html [data-move-target].file-move-over,
+    html #preview-results > ul > .entry[data-move-target].file-move-over { outline-color: Highlight; }
+  }
+"""
+
 FILE_COVER_STYLE = """
   .cover-content { display: none; }
   html[data-file-view="icons"] #preview-results .item .icon[data-cover-url] {
@@ -2082,7 +2392,7 @@ def display_picker(name, label, choices, default, extra=""):
 VIEW_PICKER = display_picker("view", "切換檔案檢視", (("icons", "圖像"), ("list", "列表"), ("columns", "直欄")), "list")
 
 
-def settings_picker(language):
+def settings_picker(language, recent_files=False):
     languages = "".join(
         f'<button type="button" data-language="{key}" lang="{key}" aria-pressed="{str(key == language).lower()}">'
         f'{escape(label)}</button>' for key, label in LANGUAGES.items()
@@ -2092,8 +2402,12 @@ def settings_picker(language):
         + display_icon("caret", ' class="picker-caret"')
         + '</summary>' + languages + '</details>'
     )
+    recent_toggle = (
+        '<label class="recent-toggle"><input type="checkbox" data-recent-toggle>'
+        '<span>顯示最近開啟的檔案</span></label>'
+    ) if recent_files else ""
     return localized_template(display_picker(
-        "theme", "設定", (("light", "白色背景"), ("dark", "深色背景")), "dark", menu
+        "theme", "設定", (("light", "白色背景"), ("dark", "深色背景")), "dark", recent_toggle + menu
     ), language)
 
 DISPLAY_PREFERENCES = """
@@ -2506,51 +2820,376 @@ PREVIEW_SCRIPT = r"""
   const editor = document.getElementById("file-editor");
   if (editor) enableEditor(editor);
 
-  async function openFilePreview(button) {
-    const { previewKind, previewUrl, previewName, previewOpen, previewDownload, previewLanguage } = button.dataset;
+  function enableRecentFiles() {
+    const panel = document.getElementById("recent-files");
+    const toggle = document.querySelector("[data-recent-toggle]");
+    const scope = panel?.dataset.recentScope;
+    if (!toggle || !/^[a-f0-9]{64}$/.test(scope || "")) return null;
+    const list = panel.querySelector("[data-recent-list]");
+    const empty = panel.querySelector("[data-recent-empty]");
+    const clear = panel.querySelector("[data-recent-clear]");
+    const historyKey = "server-files-recents-v1:" + scope;
+    const enabledKey = "server-files-recents-enabled";
+    const limit = 6;
+    let records = [];
+    let cards = new Map();
+    let recording = Promise.resolve();
+    let historyEpoch = 0;
+
+    function filePath(path) {
+      if (typeof path !== "string" || path.length > 12_288 || !path.startsWith("/") || path.startsWith("//")) return null;
+      try {
+        const url = new URL(path, location.origin);
+        if (url.origin !== location.origin || url.pathname !== path || url.search || url.hash) return null;
+        const parts = path.slice(1).split("/").map(decodeURIComponent);
+        if (parts.some(part => !part || part === "." || part === ".." || /[\/\\\u0000-\u001f\u007f]/.test(part)
+            || part === ".codex-preview-trash"
+            || [".preview-file-tags-", ".preview-upload-", ".preview-rename-", ".preview-save-"]
+              .some(prefix => part.startsWith(prefix))) || parts[0] === ".codex-preview") return null;
+        return { path, name: parts[parts.length - 1] };
+      } catch {
+        return null;
+      }
+    }
+
+    function validRecord(value) {
+      const file = filePath(value?.path);
+      if (!file || !["image", "pdf", "text"].includes(value.kind)) return null;
+      return {
+        path: file.path,
+        kind: value.kind,
+        language: ["python", "shell", "javascript", "markdown"].includes(value.language) ? value.language : "",
+        open: value.open === true,
+        cover: ["image", "text"].includes(value.cover) ? value.cover : "",
+      };
+    }
+
+    function readHistory() {
+      try {
+        const raw = localStorage.getItem(historyKey);
+        const saved = raw && raw.length <= 100_000 ? JSON.parse(raw) : [];
+        if (!Array.isArray(saved)) return [];
+        const valid = new Map();
+        for (const item of saved.slice(0, limit)) {
+          const record = validRecord(item);
+          if (record && !valid.has(record.path)) valid.set(record.path, record);
+        }
+        return [...valid.values()];
+      } catch {
+        return [];
+      }
+    }
+
+    function writeHistory(scopeVerified = false) {
+      try {
+        if (records.length) localStorage.setItem(historyKey, JSON.stringify(records));
+        else localStorage.removeItem(historyKey);
+      } catch {}
+      render(scopeVerified);
+    }
+
+    async function verifyScope(signal) {
+      const response = await fetch("/.codex-preview/health", { signal, redirect: "error" });
+      if (!response.ok) return false;
+      const data = await response.json();
+      return data?.scope === "files" && data.recent_scope === scope;
+    }
+
+    async function readTextCover(url, container, symbol) {
+      try {
+        const response = await fetch(url, { redirect: "error" });
+        if (!response.ok || response.headers.get("Content-Type")?.split(";")[0] !== "text/plain") return;
+        const value = await response.text();
+        if (!container.isConnected || !value.trim()) return;
+        const text = document.createElement("pre");
+        text.textContent = value.slice(0, 520);
+        symbol.replaceWith(text);
+      } catch {}
+    }
+
+    function makeCard(record, coverScope) {
+      const { path, name } = filePath(record.path);
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "recent-file-card";
+      button.title = name;
+      const cover = document.createElement("span");
+      cover.className = "recent-file-cover";
+      cover.setAttribute("aria-hidden", "true");
+      const symbol = document.createElement("span");
+      symbol.className = "recent-file-symbol";
+      symbol.textContent = { image: "IMG", pdf: "PDF", text: "TXT" }[record.kind];
+      cover.append(symbol);
+      const label = document.createElement("span");
+      label.className = "recent-file-name";
+      label.textContent = name;
+      button.append(cover, label);
+      coverScope?.then(matches => {
+        if (!matches || !button.isConnected || !toggle.checked) return;
+        if (record.cover === "image") {
+          const image = document.createElement("img");
+          image.alt = "";
+          image.draggable = false;
+          image.addEventListener("load", () => symbol.replaceWith(image), { once: true });
+          image.src = path + "?cover=1";
+        } else if (record.cover === "text") {
+          readTextCover(path + "?cover=1", cover, symbol);
+        }
+      });
+      button.addEventListener("click", () => openFilePreview({
+        previewKind: record.kind,
+        previewUrl: path + "?preview=1",
+        previewName: name,
+        previewOpen: record.open ? path : "",
+        previewDownload: path + "?download=1",
+        previewLanguage: record.language,
+      }, record, true));
+      return button;
+    }
+
+    function render(scopeVerified = false) {
+      panel.hidden = !toggle.checked;
+      clear.hidden = !records.length;
+      empty.hidden = Boolean(records.length);
+      const next = new Map();
+      let coverScope;
+      if (toggle.checked) {
+        for (const record of records) {
+          const previous = cards.get(record.path);
+          const same = previous && ["kind", "language", "open", "cover"].every(key => previous.record[key] === record[key]);
+          if (!same && record.cover && !coverScope) {
+            coverScope = scopeVerified ? Promise.resolve(true) : verifyScope().catch(() => false);
+          }
+          next.set(record.path, same ? previous : { record, button: makeCard(record, record.cover ? coverScope : null) });
+        }
+      }
+      cards = next;
+      list.replaceChildren(...Array.from(cards.values(), card => card.button));
+    }
+
+    function restore() {
+      try { toggle.checked = localStorage.getItem(enabledKey) !== "0"; }
+      catch { toggle.checked = true; }
+      records = readHistory();
+      render();
+    }
+
+    function forget(path) {
+      if (!records.some(record => record.path === path)) return;
+      records = records.filter(record => record.path !== path);
+      writeHistory();
+    }
+
+    toggle.addEventListener("change", () => {
+      try { localStorage.setItem(enabledKey, toggle.checked ? "1" : "0"); } catch {}
+      render();
+    });
+    clear.addEventListener("click", () => {
+      historyEpoch += 1;
+      records = [];
+      writeHistory();
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key === null || (event.key === historyKey && event.newValue === null)) historyEpoch += 1;
+      if (event.key === historyKey || event.key === enabledKey || event.key === null) restore();
+    });
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) restore();
+    });
+    document.addEventListener("preview-file-path-change", (event) => {
+      const { from, to } = event.detail || {};
+      const oldFile = filePath(from);
+      const replacement = filePath(to);
+      if (!oldFile || !records.some(record => record.path === oldFile.path)) return;
+      const extension = name => name.includes(".") ? name.slice(name.lastIndexOf(".")).toLowerCase() : "";
+      if (!replacement || extension(oldFile.name) !== extension(replacement.name)) {
+        forget(oldFile.path);
+        return;
+      }
+      records = records.filter(record => record.path !== replacement.path || record.path === oldFile.path)
+        .map(record => record.path === oldFile.path ? { ...record, path: replacement.path } : record);
+      writeHistory();
+    });
+    restore();
+
+    return {
+      enabled: () => toggle.checked,
+      verifyScope,
+      fromButton(button) {
+        try {
+          const data = button.dataset;
+          const url = new URL(data.previewUrl, location.origin);
+          if (url.origin !== location.origin || url.search !== "?preview=1" || url.hash) return null;
+          const tile = button.closest(".entry")?.querySelector("[data-cover-url]")?.dataset;
+          return validRecord({
+            path: url.pathname, kind: data.previewKind, language: data.previewLanguage,
+            open: data.previewOpen === url.pathname,
+            cover: tile?.coverUrl === url.pathname + "?cover=1" ? tile.coverKind : "",
+          });
+        } catch {
+          return null;
+        }
+      },
+      remember(record, scopeVerified) {
+        if (!toggle.checked) return;
+        const epoch = historyEpoch;
+        recording = recording.then(async () => {
+          if ((!scopeVerified && !await verifyScope()) || !toggle.checked || epoch !== historyEpoch) return;
+          records = [record, ...records.filter(item => item.path !== record.path)].slice(0, limit);
+          writeHistory(true);
+        }).catch(() => {});
+      },
+      forget,
+    };
+  }
+
+  const recentFiles = enableRecentFiles();
+
+  async function openFilePreview(preview, record, fromHistory = false) {
+    const { previewKind, previewUrl, previewName, previewOpen, previewDownload, previewLanguage } = preview;
     document.getElementById("preview-title").textContent = previewName;
     const openLink = document.getElementById("preview-open");
-    openLink.hidden = !previewOpen;
-    if (previewOpen) openLink.href = previewOpen;
-    else openLink.removeAttribute("href");
     const downloadLink = document.getElementById("preview-download");
-    downloadLink.href = previewDownload;
-    downloadLink.dataset.transferUrl = new URL(previewDownload, location.href).pathname;
-    previewContent.replaceChildren();
-    previewDialog.showModal();
-    if (previewKind === "image" || previewKind === "pdf") {
-      const element = document.createElement(previewKind === "image" ? "img" : "iframe");
-      if (previewKind === "image") element.alt = previewName;
-      else element.title = previewName;
-      element.src = previewUrl;
-      previewContent.append(element);
-      return;
+    function links(show) {
+      openLink.hidden = !show || !previewOpen;
+      if (show && previewOpen) openLink.href = previewOpen;
+      else openLink.removeAttribute("href");
+      downloadLink.hidden = !show;
+      if (show) {
+        downloadLink.href = previewDownload;
+        downloadLink.dataset.transferUrl = new URL(previewDownload, location.href).pathname;
+      } else {
+        downloadLink.removeAttribute("href");
+        delete downloadLink.dataset.transferUrl;
+      }
     }
+    links(!fromHistory);
     const message = document.createElement("p");
     message.textContent = "讀取預覽中…";
-    previewContent.append(message);
+    previewContent.replaceChildren(message);
+    previewDialog.showModal();
+    previewRequest?.abort();
     const controller = new AbortController();
     previewRequest = controller;
+    const signal = controller.signal;
+    const remember = () => {
+      if (record && !signal.aborted) recentFiles.remember(record, fromHistory);
+    };
+    function failed(response) {
+      if (fromHistory && [404, 410].includes(response?.status)) {
+        recentFiles.forget(record.path);
+        links(false);
+        message.textContent = "找不到這個檔案。";
+      } else {
+        message.textContent = "無法載入預覽，可開啟或下載檔案。";
+      }
+      previewContent.replaceChildren(message);
+    }
     try {
-      const response = await fetch(previewUrl, { signal: controller.signal });
-      if (!response.ok) throw new Error("Preview request failed");
+      if (fromHistory) {
+        if (!await recentFiles.verifyScope(signal)) {
+          if (!signal.aborted) message.textContent = "目前連線的伺服器已變更，請重新整理頁面。";
+          return;
+        }
+        if (signal.aborted) return;
+        links(true);
+      }
+      if (previewKind === "image" || previewKind === "pdf") {
+        if (fromHistory || (previewKind === "pdf" && record && recentFiles.enabled())) {
+          const response = await fetch(previewUrl, { method: "HEAD", signal, redirect: "error" });
+          if (signal.aborted) return;
+          if (!response.ok) { failed(response); return; }
+        }
+        const element = document.createElement(previewKind === "image" ? "img" : "iframe");
+        if (previewKind === "image") element.alt = previewName;
+        else element.title = previewName;
+        element.addEventListener("load", remember, { once: true });
+        element.addEventListener("error", () => { if (!signal.aborted) failed(); }, { once: true });
+        element.src = previewUrl;
+        previewContent.replaceChildren(element);
+        return;
+      }
+      const response = await fetch(previewUrl, { signal, redirect: "error" });
+      if (signal.aborted) return;
+      if (!response.ok) { failed(response); return; }
       const content = await response.text();
-      if (controller.signal.aborted) return;
+      if (signal.aborted) return;
       previewContent.replaceChildren(sourcePreview(content, previewLanguage));
+      remember();
     } catch {
-      if (!controller.signal.aborted) message.textContent = "無法載入預覽，可開啟或下載檔案。";
+      if (!signal.aborted) {
+        if (fromHistory && downloadLink.hidden) message.textContent = "無法確認伺服器連線，請重新整理頁面。";
+        else failed();
+      }
     }
   }
 
   document.getElementById("preview-close").addEventListener("click", () => previewDialog.close());
+  const previewResizeHandle = document.getElementById("preview-resize");
+  let previewResizeStart = null;
+
+  function setPreviewSize(width, height) {
+    const maxWidth = Math.max(1, document.documentElement.clientWidth - 28);
+    const maxHeight = Math.max(1, window.innerHeight - 28);
+    previewDialog.style.setProperty("--preview-width", Math.min(maxWidth, Math.max(320, width)) + "px");
+    previewDialog.style.setProperty("--preview-height", Math.min(maxHeight, Math.max(220, height)) + "px");
+    previewDialog.dataset.resized = "";
+  }
+
+  function resetPreviewSize() {
+    delete previewDialog.dataset.resized;
+    previewDialog.style.removeProperty("--preview-width");
+    previewDialog.style.removeProperty("--preview-height");
+  }
+
+  function stopPreviewResize() {
+    previewResizeStart = null;
+    previewDialog.classList.remove("preview-resizing");
+  }
+
+  previewResizeHandle.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0 || !event.isPrimary || previewResizeStart) return;
+    const { width, height } = previewDialog.getBoundingClientRect();
+    previewResizeStart = { id: event.pointerId, x: event.clientX, y: event.clientY, width, height };
+    previewResizeHandle.setPointerCapture(event.pointerId);
+    previewDialog.classList.add("preview-resizing");
+  });
+  previewResizeHandle.addEventListener("pointermove", (event) => {
+    const start = previewResizeStart;
+    if (!start || event.pointerId !== start.id) return;
+    // The dialog stays centered, so a one-pixel edge movement needs two pixels of size.
+    setPreviewSize(start.width + 2 * (event.clientX - start.x), start.height + 2 * (event.clientY - start.y));
+  });
+  previewResizeHandle.addEventListener("lostpointercapture", stopPreviewResize);
+  previewResizeHandle.addEventListener("dblclick", resetPreviewSize);
+  previewResizeHandle.addEventListener("keydown", (event) => {
+    if (event.key === "Home") {
+      event.preventDefault();
+      resetPreviewSize();
+      return;
+    }
+    const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    const { width, height } = previewDialog.getBoundingClientRect();
+    setPreviewSize(width + direction[0] * 24, height + direction[1] * 24);
+  });
   previewDialog.addEventListener("close", () => {
+    if (previewDialog.open) return;
+    stopPreviewResize();
     previewRequest?.abort();
     previewContent.replaceChildren();
   });
 
   function enableDragDownloads() {
-    if (!supportsDragDownload) return;
     for (const link of results.querySelectorAll("[data-drag-download]")) {
+      if (link.matches("[data-move-source]")) {
+        link.draggable = true;
+        link.title = supportsDragDownload ? "重新命名，拖到資料夾移動，或拖到 Finder 下載"
+                                         : "重新命名，或拖到資料夾移動";
+        continue;
+      }
+      if (!supportsDragDownload) continue;
       link.draggable = true;
       if (link.matches("[data-rename-url]")) {
         link.title = "重新命名，或拖到 Finder 下載";
@@ -2754,7 +3393,7 @@ PREVIEW_SCRIPT = r"""
   results.addEventListener("click", (event) => {
     const previewButton = event.target.closest("button[data-preview-kind]");
     if (previewButton) {
-      openFilePreview(previewButton);
+      openFilePreview(previewButton.dataset, recentFiles?.fromButton(previewButton));
       return;
     }
     const copyButton = event.target.closest("button[data-copy-path]");
@@ -2792,6 +3431,174 @@ PREVIEW_SCRIPT = r"""
     queueSearch(0);
   });
 })();
+"""
+
+FILE_MOVE_SCRIPT = r"""
+(() => {
+  const results = document.getElementById("preview-results");
+  const token = document.getElementById("upload-token").dataset.token;
+  const status = document.getElementById("file-move-status");
+  const feedback = status.querySelector("[data-file-move-feedback]");
+  const undo = status.querySelector("[data-file-move-undo]");
+  const dragType = "application/x-server-files-move";
+  const failureMessage = "移動檔案失敗。";
+  let currentDrag = null;
+  let target = null;
+  let dragSequence = 0;
+  let pending = false;
+  let previousMove = null;
+
+  function moveStatus(message, failed = false) {
+    status.hidden = false;
+    status.toggleAttribute("data-move-failed", failed);
+    feedback.textContent = message;
+    undo.hidden = pending || !previousMove;
+  }
+
+  function folderPath(path) {
+    return path.slice(0, path.lastIndexOf("/") + 1);
+  }
+
+  function scopedPath(value, directory) {
+    if (typeof value !== "string" || !value) return null;
+    try {
+      const url = new URL(value, window.location.origin);
+      if (url.origin === window.location.origin && !url.search && !url.hash
+          && url.pathname.endsWith("/") === directory) return url.pathname;
+    } catch {}
+    return null;
+  }
+
+  async function moveFile({ sourceURL, mtime, destination }, isUndo = false) {
+    if (pending) return { ok: false, error: "檔案正在移動。" };
+    const source = scopedPath(sourceURL, false);
+    const folder = scopedPath(destination, true);
+    if (!source || !folder || typeof mtime !== "string" || !/^-?[0-9]+$/.test(mtime)) {
+      moveStatus(failureMessage, true);
+      return { ok: false, error: failureMessage };
+    }
+    if (!isUndo) previousMove = null;
+    pending = true;
+    moveStatus("正在移動檔案…");
+    let message = failureMessage;
+    let succeeded = false;
+    try {
+      const endpoint = new URL(source, window.location.origin);
+      endpoint.searchParams.set("move", "1");
+      const response = await fetch(endpoint, {
+        method: "POST",
+        redirect: "error",
+        headers: {
+          "X-Preview-Token": token,
+          "X-Preview-File-Mtime": mtime,
+          "X-Preview-Destination": folder,
+        },
+      });
+      const payload = await response.json();
+      if (response.ok && typeof payload.name === "string") {
+        const moved = scopedPath(payload.url, false);
+        previousMove = !isUndo && moved ? { sourceURL: moved, mtime, destination: folderPath(source) } : null;
+        message = (isUndo ? "已復原 {name} 的移動" : "已移動 {name}").replace("{name}", () => payload.name);
+        succeeded = true;
+        if (moved) {
+          document.dispatchEvent(new CustomEvent("preview-file-path-change", { detail: { from: source, to: moved } }));
+        }
+        document.dispatchEvent(new Event("preview-upload-complete"));
+      } else if (typeof payload.error === "string" && payload.error) {
+        message = payload.error;
+      }
+    } catch {}
+    pending = false;
+    moveStatus(message, !succeeded);
+    return succeeded ? { ok: true } : { ok: false, error: message };
+  }
+
+  function highlight(next) {
+    if (target === next) return;
+    target?.classList.remove("file-move-over");
+    target = next;
+    target?.classList.add("file-move-over");
+  }
+
+  function finishDrag() {
+    currentDrag?.row.classList.remove("file-move-source");
+    currentDrag = null;
+    highlight(null);
+  }
+
+  function internalDrag(transfer) {
+    if (!currentDrag || !transfer) return false;
+    if (!currentDrag.source.isConnected) {
+      finishDrag();
+      return false;
+    }
+    const types = Array.from(transfer.types);
+    return types.includes(dragType) || !types.includes("Files");
+  }
+
+  function dropTarget(event) {
+    const candidate = event.target.closest?.("[data-move-target]");
+    if (!candidate || pending || folderPath(currentDrag.sourceURL) === candidate.dataset.moveTarget) return null;
+    return candidate;
+  }
+
+  results.addEventListener("dragstart", (event) => {
+    const source = event.target.closest?.("[data-move-source]");
+    const transfer = event.dataTransfer;
+    if (!source || !transfer || event.defaultPrevented) return;
+    finishDrag();
+    const row = source.closest(".entry");
+    const id = String(++dragSequence);
+    currentDrag = { id, row, source, sourceURL: source.dataset.renameUrl, mtime: source.dataset.renameMtime };
+    transfer.setData(dragType, id);
+    transfer.effectAllowed = transfer.effectAllowed === "copy" ? "copyMove" : "move";
+    row.classList.add("file-move-source");
+    source.addEventListener("dragend", () => {
+      if (currentDrag?.id === id) finishDrag();
+    }, { once: true });
+  });
+
+  document.addEventListener("dragover", (event) => {
+    if (!internalDrag(event.dataTransfer)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const next = dropTarget(event);
+    event.dataTransfer.dropEffect = next ? "move" : "none";
+    highlight(next);
+  }, true);
+
+  document.addEventListener("dragleave", (event) => {
+    if (target && (!(event.relatedTarget instanceof Node) || !target.contains(event.relatedTarget))) highlight(null);
+  }, true);
+
+  document.addEventListener("drop", (event) => {
+    const transfer = event.dataTransfer;
+    if (!internalDrag(transfer)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const candidate = dropTarget(event);
+    const source = currentDrag;
+    const matches = transfer.getData(dragType) === source.id;
+    finishDrag();
+    if (candidate && matches) moveFile({ ...source, destination: candidate.dataset.moveTarget });
+  }, true);
+
+  document.addEventListener("preview-file-move", (event) => {
+    const request = event.detail || {};
+    moveFile(request).then((result) => request.complete?.(result));
+  });
+
+  undo.addEventListener("click", () => {
+    if (previousMove && !pending) moveFile(previousMove, true);
+  });
+})();
+"""
+
+FILE_MOVE_STATUS_HTML = """
+<div id="file-move-status" class="file-move-status" hidden>
+<span role="status" data-file-move-feedback></span>
+<button type="button" data-file-move-undo hidden>復原</button>
+</div>
 """
 
 FILE_COVER_SCRIPT = """
@@ -3455,6 +4262,166 @@ UPLOAD_SCRIPT = """
 })();
 """
 
+FILE_MOVE_DIALOG_HTML = """
+<dialog id="file-move-dialog" class="file-move-dialog" aria-labelledby="file-move-title" aria-describedby="file-move-name">
+<h2 id="file-move-title">移動到資料夾</h2>
+<p id="file-move-name" class="file-move-filename"></p>
+<div class="file-move-navigation">
+<button type="button" class="dialog-button" id="file-move-root">工作區根目錄</button>
+<button type="button" class="dialog-button" id="file-move-parent"><span aria-hidden="true">↑</span> 上一層</button>
+</div>
+<p id="file-move-directory" class="delete-file-path" tabindex="-1"></p>
+<ul id="file-move-folders" class="file-move-folders" aria-label="目的地資料夾"></ul>
+<p id="file-move-folder-state" class="file-move-folder-state" role="status"></p>
+<p id="file-move-error" class="rename-error" role="alert" hidden></p>
+<template id="file-move-folder-template"><li><button type="button" class="file-move-folder">
+<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><use href="#file-icon-folder"></use></svg><span></span><span aria-hidden="true">›</span>
+</button></li></template>
+<div class="file-move-actions">
+<button type="button" class="dialog-button" id="file-move-cancel" autofocus>取消</button>
+<button type="button" class="dialog-button file-move-confirm" id="file-move-confirm" disabled>移到這裡</button>
+</div></dialog>
+"""
+
+FILE_MOVE_DIALOG_SCRIPT = r"""
+(() => {
+  const dialog = document.getElementById("file-move-dialog");
+  const name = document.getElementById("file-move-name");
+  const root = document.getElementById("upload-token").dataset.root;
+  const goRoot = document.getElementById("file-move-root");
+  const goParent = document.getElementById("file-move-parent");
+  const pathLabel = document.getElementById("file-move-directory");
+  const folders = document.getElementById("file-move-folders");
+  const state = document.getElementById("file-move-folder-state");
+  const error = document.getElementById("file-move-error");
+  const cancel = document.getElementById("file-move-cancel");
+  const confirm = document.getElementById("file-move-confirm");
+  const folderTemplate = document.getElementById("file-move-folder-template");
+  const searchForm = document.querySelector('form[role="search"]');
+  const folderNames = new Intl.Collator(document.documentElement.lang, {numeric: true});
+  let source;
+  let destination;
+  let request;
+  let ready = false;
+  let pending = false;
+
+  function parentOf(path) {
+    return path.slice(0, path.lastIndexOf("/", path.length - 2) + 1);
+  }
+
+  function updateControls() {
+    goRoot.disabled = goParent.disabled = pending || destination === "/";
+    confirm.disabled = pending || !ready || destination === parentOf(source.sourceURL);
+    cancel.disabled = pending;
+    for (const button of folders.querySelectorAll("button")) button.disabled = pending;
+  }
+
+  function showError(message) {
+    error.textContent = message;
+    error.hidden = !message;
+  }
+
+  async function openFolder(path) {
+    request?.abort();
+    const active = new AbortController();
+    request = active;
+    destination = path;
+    ready = false;
+    const refocus = folders.contains(document.activeElement) ||
+      (path === "/" && [goRoot, goParent].includes(document.activeElement));
+    pathLabel.textContent = (root + decodeURIComponent(path)).replace(/\/$/, "") || "/";
+    if (refocus) pathLabel.focus();
+    folders.replaceChildren();
+    folders.setAttribute("aria-busy", "true");
+    state.textContent = "正在載入資料夾…";
+    showError("");
+    updateControls();
+    try {
+      const url = new URL(path, window.location.origin);
+      if (searchForm.elements.hidden.value === "1") url.searchParams.set("hidden", "1");
+      const response = await fetch(url, {signal: active.signal, redirect: "error", cache: "no-store"});
+      if (!response.ok) throw new Error("無法載入資料夾。");
+      const html = await response.text();
+      if (request !== active) return;
+      const page = new DOMParser().parseFromString(html, "text/html");
+      const children = [...page.querySelectorAll("#preview-results > ul > .entry[data-move-target]")]
+        .map(row => ({path: row.dataset.moveTarget, name: row.querySelector(".name")?.textContent}))
+        .filter(child => child.name && child.path.startsWith("/") && !child.path.startsWith("//") &&
+          child.path.endsWith("/") && child.path !== path && parentOf(child.path) === path)
+        .sort((first, second) => folderNames.compare(first.name, second.name));
+      const fragment = document.createDocumentFragment();
+      for (const child of children) {
+        const row = folderTemplate.content.cloneNode(true);
+        const button = row.querySelector("button");
+        button.dataset.moveDirectory = child.path;
+        button.querySelector("span").textContent = child.name;
+        fragment.append(row);
+      }
+      folders.append(fragment);
+      ready = true;
+      state.textContent = children.length ? "" : "這個資料夾沒有子資料夾。";
+    } catch {
+      if (request !== active) return;
+      state.textContent = "";
+      showError("無法載入資料夾。");
+    } finally {
+      if (request === active) {
+        request = null;
+        folders.removeAttribute("aria-busy");
+        updateControls();
+        if (refocus && document.activeElement === pathLabel) {
+          const target = folders.querySelector("button") || (confirm.disabled ? cancel : confirm);
+          target.focus();
+        }
+      }
+    }
+  }
+
+  document.getElementById("preview-results").addEventListener("click", (event) => {
+    const trigger = event.target.closest("button[data-move-dialog-url]");
+    if (!trigger || dialog.open) return;
+    source = {sourceURL: trigger.dataset.moveDialogUrl, mtime: trigger.dataset.moveDialogMtime};
+    name.textContent = trigger.dataset.moveDialogName;
+    dialog.showModal();
+    openFolder(parentOf(source.sourceURL));
+  });
+  goRoot.addEventListener("click", () => openFolder("/"));
+  goParent.addEventListener("click", () => openFolder(parentOf(destination)));
+  folders.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-move-directory]");
+    if (button && !pending) openFolder(button.dataset.moveDirectory);
+  });
+  cancel.addEventListener("click", () => dialog.close());
+  dialog.addEventListener("cancel", (event) => { if (pending) event.preventDefault(); });
+  dialog.addEventListener("close", () => {
+    if (dialog.open) return;
+    request?.abort();
+    request = null;
+  });
+  confirm.addEventListener("click", () => {
+    if (confirm.disabled) return;
+    pending = true;
+    showError("");
+    updateControls();
+    document.dispatchEvent(new CustomEvent("preview-file-move", {detail: {
+      ...source, destination,
+      complete: (result) => {
+        pending = false;
+        updateControls();
+        if (result.ok) {
+          dialog.close();
+          const undo = document.querySelector("[data-file-move-undo]:not([hidden])");
+          (undo || searchForm.elements.q).focus();
+        } else {
+          showError(result.error || "無法移動檔案。");
+          confirm.focus();
+        }
+      },
+    }}));
+  });
+})();
+"""
+
 DELETE_SCRIPT = """
 (() => {
   const results = document.getElementById("preview-results");
@@ -3506,6 +4473,7 @@ DELETE_SCRIPT = """
       message.textContent = "已移到伺服器回收區";
       recovery.textContent = data.trash_path;
       recovery.hidden = false;
+      document.dispatchEvent(new CustomEvent("preview-file-path-change", { detail: { from: url.pathname } }));
       document.dispatchEvent(new Event("preview-upload-complete"));
     } catch (error) {
       status.classList.add("error");
@@ -3870,6 +4838,9 @@ RENAME_SCRIPT = """
       message.textContent = "已在伺服器重新命名";
       updatedPath.textContent = data.path;
       updatedPath.hidden = false;
+      if (typeof data.url === "string") {
+        document.dispatchEvent(new CustomEvent("preview-file-path-change", { detail: { from: url.pathname, to: data.url } }));
+      }
       document.dispatchEvent(new Event("preview-upload-complete"));
     } catch (failure) {
       error.textContent = failure.message || "無法重新命名檔案";
@@ -3917,7 +4888,11 @@ FILE_PREVIEW_HTML = """
 <button type="button" id="preview-close" class="entry-action preview-close" aria-label="關閉預覽" autofocus>×</button></div>
 <div id="preview-content" class="preview-content"></div>
 <div class="preview-footer"><a id="preview-open" target="_blank" rel="noopener">開啟完整檔案</a>
-<a id="preview-download" download>下載</a></div></dialog>
+<a id="preview-download" download>下載</a></div>
+<button id="preview-resize" class="preview-resize" type="button" aria-label="調整預覽大小"
+ aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home" title="拖曳調整預覽大小，雙擊還原">
+<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"
+ stroke-linecap="round" aria-hidden="true"><path d="M3 13 13 3m-6 10 6-6m-2 6 2-2"/></svg></button></dialog>
 """
 
 EDITOR_HTML = """
@@ -4246,11 +5221,22 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
                 f'aria-label="{preview_label}" title="{tr("快速預覽")}"><span class="eye-mark" aria-hidden="true"></span></button>'
             )
     drop_target = f' data-upload-target="{escape(file_url, quote=True)}"' if home_view and is_dir else ""
+    if drop_target and not any(is_transfer_internal(part) for part in relative_path.parts):
+        drop_target += f' data-move-target="{transfer_url}"'
     can_change_file = home_view and not is_dir and relative_path.parts[0] != TRASH_DIRECTORY
-    delete_action = edit_action = tag_action = ""
+    delete_action = edit_action = tag_action = move_action = ""
     name_content = escape(relative_path.name)
     if can_change_file:
         delete_action = file_delete_action(absolute_path, file_url, modified_ns, language)
+        if not any(is_transfer_internal(part) for part in relative_path.parts):
+            move_action = (
+                f'<button class="entry-action move-file-action" type="button" data-move-dialog-url="{transfer_url}" '
+                f'data-move-dialog-name="{escape(relative_path.name, quote=True)}" data-move-dialog-mtime="{modified_ns}" '
+                f'aria-label="{tr("移動 {name}")}" title="{tr("移動到資料夾")}" aria-haspopup="dialog" '
+                'aria-controls="file-move-dialog"><svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" '
+                'fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">'
+                '<path d="M2 5V3.8h4l1.4 1.4H14v7.3H2V8m4 1h5m-2-2 2 2-2 2"/></svg></button>'
+            )
         if suffix in EDITABLE_SUFFIXES and not any(is_transfer_internal(part) for part in relative_path.parts):
             edit_label = tr("編輯 {name}")
             edit_name = escape(relative_path.name, quote=True)
@@ -4302,17 +5288,18 @@ def entry_row(root, entry, show_parent, mode, show_hidden=False, home_view=False
         rename_label = tr("重新命名 {name}")
         rename_name = escape(relative_path.name, quote=True)
         rename_path = escape(str(absolute_path), quote=True)
+        move_source = " data-move-source" if not any(is_transfer_internal(part) for part in relative_path.parts) else ""
         item = (
             f'<button class="item rename-file" type="button" data-rename-url="{transfer_url}" '
             f'data-rename-path="{rename_path}" data-rename-name="{rename_name}" '
-            f'data-rename-mtime="{modified_ns}" aria-label="{rename_label}" title="{tr("重新命名")}"{drag}>'
+            f'data-rename-mtime="{modified_ns}" aria-label="{rename_label}" title="{tr("重新命名")}"{drag}{move_source}>'
             f'{item_body}</button>'
         )
     else:
         item = f'<span class="item"{drag}>{item_body}</span>'
     return (
         f'<li class="entry" data-search-path="{escape(relative_path.as_posix(), quote=True)}"{drop_target}>{item}'
-        f'<div class="entry-actions">{quick_preview}{edit_action}{tag_action}'
+        f'<div class="entry-actions">{quick_preview}{edit_action}{tag_action}{move_action}'
         f'<button class="entry-action copy-path" type="button" data-copy-path="{escape(str(absolute_path), quote=True)}" '
         f'aria-label="{copy_label}" title="{tr("複製伺服器路徑")}"><span class="copy-mark" aria-hidden="true"></span></button>'
         f'{download}{delete_action}</div></li>'
@@ -4494,7 +5481,8 @@ def folder_column_navigation(root, folder, mode, show_hidden, content_search=Fal
                 directory_url = entry_href(entry.path, True)
                 href = escape(listing_href(directory_url, mode, show_hidden=show_hidden,
                                            content_search=content_search), quote=True)
-                drop_target = (f' data-upload-target="{escape(directory_url, quote=True)}"'
+                target = escape(directory_url, quote=True)
+                drop_target = (f' data-upload-target="{target}" data-move-target="{target}"'
                                if not any(is_transfer_internal(part) for part in entry.path.parts) else "")
                 current = ' aria-current="true"' if name == selected_name else ""
                 links.append(
@@ -4519,7 +5507,8 @@ def folder_column_navigation(root, folder, mode, show_hidden, content_search=Fal
 
 def preview_page(root, entries, mode, folder=None, query="", truncated=False,
                  upload_token="", show_hidden=False, results_only=False, row_cache=None,
-                 server_identity="", language="zh-Hant", content_search=False, content_limited=False):
+                 server_identity="", language="zh-Hant", content_search=False, content_limited=False,
+                 recent_scope=""):
     def tr(text):
         return escape(localized(text, language), quote=True)
 
@@ -4560,9 +5549,11 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
     )
     sort_controls = "".join(sort_link(*field, "sort-toggle") for field in sort_fields)
     if folder:
-        href = "/" if not folder.parent.parts else entry_href(folder.parent, True)
-        href = listing_href(href, mode, show_hidden=show_hidden, content_search=content_search)
-        links.append(f'<a class="parent-link" href="{escape(href, quote=True)}">← {tr("上一層")}</a>')
+        parent_url = "/" if not folder.parent.parts else entry_href(folder.parent, True)
+        href = listing_href(parent_url, mode, show_hidden=show_hidden, content_search=content_search)
+        parent_target = (f' data-move-target="{escape(parent_url, quote=True)}"'
+                         if home_view and not any(is_transfer_internal(part) for part in folder.parent.parts) else "")
+        links.append(f'<a class="parent-link" href="{escape(href, quote=True)}"{parent_target}>← {tr("上一層")}</a>')
     if query:
         href = escape(listing_href(current_url, mode, show_hidden=show_hidden,
                                    content_search=content_search), quote=True)
@@ -4618,7 +5609,8 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
         upload_widgets = (
             f'<span id="upload-token" data-token="{token_attr}" data-root="{root_attr}" hidden></span>'
             + localized_template(
-                UPLOAD_DIALOG_HTML + DELETE_DIALOG_HTML + RENAME_DIALOG_HTML + CREATE_DIALOG_HTML + EDITOR_HTML + FILE_TAG_HTML,
+                UPLOAD_DIALOG_HTML + DELETE_DIALOG_HTML + RENAME_DIALOG_HTML + CREATE_DIALOG_HTML +
+                EDITOR_HTML + FILE_TAG_HTML + FILE_MOVE_DIALOG_HTML,
                 language,
             )
         )
@@ -4634,15 +5626,25 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
                          if home_view else "")
     scripts = PREVIEW_SCRIPT + DOWNLOAD_SCRIPT
     if home_view:
-        scripts += UPLOAD_SCRIPT + DELETE_SCRIPT + RENAME_SCRIPT + CREATE_SCRIPT + FILE_TAG_SCRIPT + FILE_COVER_SCRIPT
+        scripts += (
+            FILE_MOVE_SCRIPT + UPLOAD_SCRIPT + DELETE_SCRIPT + RENAME_SCRIPT + CREATE_SCRIPT +
+            FILE_TAG_SCRIPT + FILE_COVER_SCRIPT + FILE_MOVE_DIALOG_SCRIPT
+        )
     view_picker = localized_template(VIEW_PICKER, language) if home_view else ""
     home_label = tr("回伺服器主目錄")
+    styles = PAGE_STYLE + FILE_VIEW_STYLE + FILE_THEME_STYLE
+    if home_view:
+        styles += FILE_TAG_STYLE + FILE_COVER_STYLE + FILE_MOVE_STYLE
+    recents = ""
+    if home_view and recent_scope:
+        styles += RECENT_FILES_STYLE
+        recents = localized_template(RECENT_FILES_HTML.format(scope=escape(recent_scope, quote=True)), language)
     return f"""<!doctype html>
 <html lang="{language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Server file</title><link rel="icon" type="image/png" sizes="32x32" href="{FAVICON_PATH}">
-{DISPLAY_PREFERENCES}<style>{PAGE_STYLE}{FILE_VIEW_STYLE}{FILE_THEME_STYLE}{FILE_TAG_STYLE + FILE_COVER_STYLE if home_view else ""}</style></head>
+{DISPLAY_PREFERENCES}<style>{styles}</style></head>
 <body>{FILE_ICON_LIBRARY}{FILE_VIEW_SYMBOLS}<header><div class="wrap"><div class="mast">
-{settings_picker(language)}{view_picker}
+{settings_picker(language, bool(recents))}{view_picker}
 <a class="home-link" href="http://{FILES_HOST}/" aria-label="{home_label}" title="{home_label}"><span class="home-mark" aria-hidden="true"></span></a>
 {remote_identity}</div>
 <div class="hero"><h1 class="current-path"><span class="current-path-label">current file path:</span><code>{escape(str(current_directory))}</code></h1>
@@ -4659,7 +5661,8 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
 <main class="wrap">
 <p id="preview-status" class="sr-only" role="status"></p>
 <p id="preview-error" class="search-error" role="alert" hidden>{tr("即時搜尋暫時無法更新，請按「搜尋」再試一次。")}</p>
-{localized_template(UPLOAD_STATUS_HTML + DELETE_STATUS_HTML, language) if home_view else ""}
+{localized_template(UPLOAD_STATUS_HTML + DELETE_STATUS_HTML + FILE_MOVE_STATUS_HTML, language) if home_view else ""}
+{recents}
 <div id="file-browser" class="file-browser">{column_navigation}{results}</div>
 </main>
 <div id="copy-feedback" class="copy-feedback" hidden>
@@ -4823,6 +5826,22 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
     def language(self):
         return requested_language(self.headers)
 
+    @property
+    def recent_scope(self):
+        if not self.home_view:
+            return ""
+        from hashlib import sha256
+
+        identity = (
+            "server-files-recent-v1", "files",
+            getattr(self.server, "preview_target", ""),
+            getattr(self.server, "preview_port", 22),
+            getattr(self.server, "preview_identity", ""),
+            str(self.view_root),
+        )
+        serialized = json.dumps(identity, ensure_ascii=True, separators=(",", ":")).encode("ascii")
+        return sha256(serialized).hexdigest()
+
     def address_string(self):
         return "ssh-preview"
 
@@ -4891,6 +5910,7 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
                 "reports": str(self.directory),
                 "files_directory": str(self.home_directory) if self.home_directory is not None else "",
                 "requested_directory": getattr(self.server, "preview_requested_directory", ""),
+                "recent_scope": self.recent_scope,
             }), "application/json; charset=utf-8")
         if params.get("transfer") == ["1"] or params.get("archive") == ["1"]:
             return self.send_transfer(requested_path, params.get("archive") == ["1"])
@@ -5206,7 +6226,7 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
             query=query, truncated=truncated, upload_token=self.upload_token if self.home_view else "",
             show_hidden=show_hidden, server_identity=getattr(self.server, "preview_identity", ""),
             language=self.language, content_search=search_content,
-            content_limited=content_search is not None and content_search.limited,
+            content_limited=content_search is not None and content_search.limited, recent_scope=self.recent_scope,
         ))
 
     def do_POST(self):
@@ -5220,7 +6240,7 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
             return self.send_json(400, error="檔案路徑無效")
         params = parse_qs(request.query)
         operations = {
-            "rename": self.rename_file, "delete": self.delete_file,
+            "rename": self.rename_file, "delete": self.delete_file, "move": self.move_file,
             "mkdir": self.create_upload_folder, "create": self.create_file,
             "upload": self.upload_file, "save": self.save_file, "tag": self.tag_file,
         }
@@ -5491,6 +6511,60 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
         renamed = relative.with_name(new_name)
         return self.send_json(200, name=new_name, path=str(self.home_directory / renamed),
                               url=entry_href(renamed, False))
+
+    def move_file(self, request_path):
+        if self.headers.get_all("Content-Length", []) not in ([], ["0"]) or self.headers.get("Transfer-Encoding"):
+            return self.send_json(400, error="移動檔案的請求必須是空的")
+        destinations = self.headers.get_all("X-Preview-Destination", [])
+        times = self.headers.get_all("X-Preview-File-Mtime", [])
+        try:
+            if (len(destinations) != 1 or len(destinations[0]) > 4096
+                    or len(times) != 1 or not re.fullmatch(r"-?[0-9]{1,21}", times[0])):
+                raise ValueError
+            decoded = unquote(request_path, errors="strict")
+            components = decoded[1:].split("/")
+            if (not decoded.startswith("/") or any(part in ("", ".", "..") for part in components)
+                    or chr(0) in decoded):
+                raise ValueError
+            source = Path(*components)
+            destination = upload_destination(destinations[0])
+            if any(is_transfer_internal(part) for part in source.parts):
+                raise PermissionError
+        except (ValueError, UnicodeError):
+            return self.send_json(400, error="檔案路徑、目標資料夾或修改時間無效")
+        except PermissionError:
+            return self.send_json(403, error="無法移動伺服器的內部檔案")
+
+        try:
+            move_preview_file(self.home_directory, source, destination, int(times[0]))
+        except RenameRecoveryRequired as error:
+            recovery_path = str(self.home_directory / source.parent / error.recovery)
+            message = localized("無法安全完成移動，請重試或從伺服器取回：", self.language)
+            return self.send_json(409, error=message + recovery_path,
+                                  recovery_path=recovery_path)
+        except ValueError:
+            return self.send_json(400, error="只能移動一般檔案")
+        except FileExistsError:
+            return self.send_json(409, error="已有同名檔案或資料夾")
+        except (FileNotFoundError, NotADirectoryError):
+            return self.send_json(404, error="找不到原始檔案或目標資料夾")
+        except PermissionError:
+            return self.send_json(403, error="沒有移動檔案的權限")
+        except OSError as error:
+            if error.errno == errno.EALREADY:
+                return self.send_json(409, error="檔案已在這個資料夾")
+            if error.errno == errno.EXDEV:
+                return self.send_json(409, error="檔案與目標資料夾位於不同檔案系統，請改用下載和上傳")
+            if error.errno == errno.ESTALE:
+                return self.send_json(409, error="檔案已變更，請重新整理後再試")
+            if error.errno == errno.ELOOP:
+                return self.send_json(404, error="找不到原始檔案或目標資料夾")
+            if error.errno in (errno.ENOSYS, errno.ENOTSUP, errno.EOPNOTSUPP, errno.EINVAL):
+                return self.send_json(501, error="伺服器的檔案系統不支援安全移動")
+            return self.send_json(500, error="伺服器無法移動檔案")
+        moved = destination / source.name
+        return self.send_json(200, name=moved.name, path=str(self.home_directory / moved),
+                              url=entry_href(moved, False))
 
     def delete_file(self, request_path):
         if self.headers.get("Content-Length") != "0" or self.headers.get("Transfer-Encoding"):
@@ -5996,13 +7070,52 @@ def rename_file_with_fallback(home, directory_fd, name, new_name, expected_mtime
         return result
 
 
-def rename_locked_file(directory_fd, name, new_name, expected_mtime):
+def move_preview_file(root, source, destination, expected_mtime):
+    if source.parent == destination:
+        raise OSError(errno.EALREADY, "file is already in the destination directory")
+    with preview_mutation_lock(root):
+        source_fd = open_upload_directory(root, source.parent)
+        try:
+            destination_fd = open_upload_directory(root, destination)
+            try:
+                source_directory = os.fstat(source_fd)
+                target_directory = os.fstat(destination_fd)
+                if source_directory.st_dev != target_directory.st_dev:
+                    raise OSError(errno.EXDEV, "destination is on a different file system")
+                if source_directory.st_ino == target_directory.st_ino:
+                    raise OSError(errno.EALREADY, "file is already in the destination directory")
+                original = file_tag_target(source_fd, source.name)
+                try:
+                    rename_locked_file(source_fd, source.name, source.name, expected_mtime,
+                                       destination_fd=destination_fd, destination_key=destination.as_posix())
+                except OSError:
+                    if (original is None or original.st_mtime_ns != expected_mtime
+                            or not is_rename_inode(file_tag_target(destination_fd, source.name), rename_identity(original))
+                            or is_rename_inode(file_tag_target(source_fd, source.name), rename_identity(original))):
+                        raise
+                    # An NFS retransmission can report an error after the native move completed.
+                replacement = file_tag_target(destination_fd, source.name)
+                if original is not None and is_rename_inode(
+                        file_tag_target(source_fd, source.name), rename_identity(original)):
+                    # A native rename of two names of the same inode can be a no-op.
+                    raise FileExistsError(errno.EEXIST, "destination already exists")
+                maintain_file_tags(root, source, original, destination / source.name, replacement)
+            finally:
+                os.close(destination_fd)
+        finally:
+            os.close(source_fd)
+
+
+def rename_locked_file(directory_fd, name, new_name, expected_mtime, *,
+                       destination_fd=None, destination_key=None):
     from hashlib import sha256
 
-    if name == new_name:
+    if name == new_name and destination_fd is None:
         checked_rename_source(directory_fd, name, expected_mtime)
         return
     request = [name, new_name, expected_mtime]
+    if destination_key is not None:
+        request.append(destination_key)
     digest = sha256(json.dumps(request).encode("ascii")).hexdigest()[:32]
     stage_name = RENAME_STAGE_PREFIX + digest
     identity = None
@@ -6015,7 +7128,13 @@ def rename_locked_file(directory_fd, name, new_name, expected_mtime):
         else:
             identity = rename_identity(source)
             try:
-                rename_without_replacement(directory_fd, name, new_name, source)
+                if destination_fd is None:
+                    rename_without_replacement(directory_fd, name, new_name, source)
+                else:
+                    if rename_entry_info(destination_fd, new_name) is not None:
+                        raise FileExistsError(errno.EEXIST, "destination already exists")
+                    rename_without_replacement(directory_fd, name, new_name, source,
+                                               destination_fd=destination_fd)
                 return
             except FileNotFoundError:
                 if rename_entry_info(directory_fd, stage_name) is None:
@@ -6023,7 +7142,10 @@ def rename_locked_file(directory_fd, name, new_name, expected_mtime):
             except OSError as error:
                 if error.errno not in (errno.ENOSYS, errno.ENOTSUP, errno.EOPNOTSUPP, errno.EINVAL):
                     raise
-    stage_rename(directory_fd, stage_name, request, identity)
+    if destination_fd is None:
+        stage_rename(directory_fd, stage_name, request, identity)
+    else:
+        stage_rename(directory_fd, stage_name, request, identity, destination_fd=destination_fd)
 
 
 @contextmanager
@@ -6110,13 +7232,13 @@ def clean_rename_stage(directory_fd, stage_fd, stage_name):
         pass  # Data has already been restored or published.
 
 
-def remove_rename_probe(directory_fd, stage_fd, stage_name, name, new_name):
+def remove_rename_probe(directory_fd, stage_fd, stage_name, name, new_name, destination_fd):
     probe = rename_entry_info(stage_fd, "probe")
     if probe is None:
         return
     identity = rename_identity(probe)
-    if not any(is_rename_inode(rename_entry_info(directory_fd, item), identity)
-               for item in (name, new_name)):
+    if not (is_rename_inode(rename_entry_info(directory_fd, name), identity)
+            or is_rename_inode(rename_entry_info(destination_fd, new_name), identity)):
         raise RenameRecoveryRequired(stage_name + "/probe")
     os.unlink("probe", dir_fd=stage_fd)
 
@@ -6135,32 +7257,33 @@ def restore_staged_file(directory_fd, stage_fd, stage_name, name, staged):
         raise RenameRecoveryRequired(stage_name + "/file") from error
 
 
-def publish_staged_file(directory_fd, stage_fd, stage_name, name, new_name, identity, resuming):
+def publish_staged_file(directory_fd, stage_fd, stage_name, name, new_name, identity, resuming, destination_fd):
     staged = os.stat("file", dir_fd=stage_fd, follow_symlinks=False)
     already_linked = (resuming and stat.S_ISREG(staged.st_mode) and is_rename_inode(staged, identity)
-                      and is_rename_inode(rename_entry_info(directory_fd, new_name), identity))
+                      and is_rename_inode(rename_entry_info(destination_fd, new_name), identity))
     if not already_linked:
         if not stat.S_ISREG(staged.st_mode) or rename_identity(staged) != identity:
             restore_staged_file(directory_fd, stage_fd, stage_name, name, staged)
             raise OSError(errno.ESTALE, "staged source changed")
         try:
-            os.link("file", new_name, src_dir_fd=stage_fd, dst_dir_fd=directory_fd, follow_symlinks=False)
+            os.link("file", new_name, src_dir_fd=stage_fd, dst_dir_fd=destination_fd, follow_symlinks=False)
         except OSError as error:
             if isinstance(error, FileExistsError) or not is_rename_inode(
-                    rename_entry_info(directory_fd, new_name), identity):
+                    rename_entry_info(destination_fd, new_name), identity):
                 restore_staged_file(directory_fd, stage_fd, stage_name, name, staged)
                 raise
             # An NFS retransmission can report a failure after the link was created.
     try:
-        if not is_rename_inode(rename_entry_info(directory_fd, new_name), identity):
+        if not is_rename_inode(rename_entry_info(destination_fd, new_name), identity):
             raise OSError(errno.ESTALE, "published target changed")
         os.unlink("file", dir_fd=stage_fd)
     except OSError as error:
         raise RenameRecoveryRequired(stage_name + "/file") from error
 
 
-def stage_rename(directory_fd, stage_name, request, identity):
-    name, new_name, expected_mtime = request
+def stage_rename(directory_fd, stage_name, request, identity, *, destination_fd=None):
+    name, new_name, expected_mtime = request[:3]
+    destination_fd = directory_fd if destination_fd is None else destination_fd
     try:
         os.mkdir(stage_name, mode=0o700, dir_fd=directory_fd)
     except FileExistsError:
@@ -6172,13 +7295,13 @@ def stage_rename(directory_fd, stage_name, request, identity):
         verify_private_rename_entry(os.fstat(stage_fd))
         journal = read_rename_journal(stage_fd, stage_name, request)
         can_clean = True
-        remove_rename_probe(directory_fd, stage_fd, stage_name, name, new_name)
+        remove_rename_probe(directory_fd, stage_fd, stage_name, name, new_name, destination_fd)
         staged = rename_entry_info(stage_fd, "file")
         if staged is not None:
             if journal is None:
                 raise RenameRecoveryRequired(stage_name + "/file")
-            return publish_staged_file(directory_fd, stage_fd, stage_name, name, new_name, journal, True)
-        target = rename_entry_info(directory_fd, new_name)
+            return publish_staged_file(directory_fd, stage_fd, stage_name, name, new_name, journal, True, destination_fd)
+        target = rename_entry_info(destination_fd, new_name)
         if target is not None:
             if (journal is not None and is_rename_inode(target, journal)
                     and not is_rename_inode(rename_entry_info(directory_fd, name), journal)):
@@ -6191,7 +7314,7 @@ def stage_rename(directory_fd, stage_name, request, identity):
 
         # Probe hardlink support without moving the source if the filesystem denies it.
         os.link(name, "probe", src_dir_fd=directory_fd, dst_dir_fd=stage_fd, follow_symlinks=False)
-        remove_rename_probe(directory_fd, stage_fd, stage_name, name, new_name)
+        remove_rename_probe(directory_fd, stage_fd, stage_name, name, new_name, destination_fd)
         checked_rename_source(directory_fd, name, expected_mtime, identity)
         try:
             os.rename(name, "file", src_dir_fd=directory_fd, dst_dir_fd=stage_fd)
@@ -6199,7 +7322,7 @@ def stage_rename(directory_fd, stage_name, request, identity):
             if rename_entry_info(stage_fd, "file") is None:
                 raise
             # NFS may have moved the source even if its reply was lost.
-        return publish_staged_file(directory_fd, stage_fd, stage_name, name, new_name, identity, False)
+        return publish_staged_file(directory_fd, stage_fd, stage_name, name, new_name, identity, False, destination_fd)
     except RenameRecoveryRequired:
         can_clean = False
         raise
@@ -6211,7 +7334,7 @@ def stage_rename(directory_fd, stage_name, request, identity):
             os.close(stage_fd)
 
 
-def rename_without_replacement(directory_fd, name, new_name, original):
+def rename_without_replacement(directory_fd, name, new_name, original, *, destination_fd=None):
     try:
         import ctypes
     except ImportError as error:
@@ -6237,7 +7360,8 @@ def rename_without_replacement(directory_fd, name, new_name, original):
             (current.st_dev, current.st_ino, current.st_mtime_ns) !=
             (original.st_dev, original.st_ino, original.st_mtime_ns)):
         raise OSError(errno.ESTALE, "file changed before rename")
-    if rename(directory_fd, old_bytes, directory_fd, new_bytes, exclusive) != 0:
+    target_fd = directory_fd if destination_fd is None else destination_fd
+    if rename(directory_fd, old_bytes, target_fd, new_bytes, exclusive) != 0:
         code = ctypes.get_errno()
         raise OSError(code, os.strerror(code))
 

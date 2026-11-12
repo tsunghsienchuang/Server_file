@@ -834,7 +834,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
     }
 
     private func startTunnel(target: SSHConnection, password: String, remember: Bool) throws {
-        guard let launcher = Bundle.main.url(forResource: "Open-Codex-Preview", withExtension: "command"),
+        guard let launcher = Bundle.main.url(forResource: "ServerFilesPreview", withExtension: "command"),
               let askpass = Bundle.main.executableURL,
               FileManager.default.isReadableFile(atPath: launcher.path) else { throw CocoaError(.fileNoSuchFile) }
 

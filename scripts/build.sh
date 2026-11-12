@@ -8,7 +8,7 @@ resources="$repo_dir/Resources"
 dist="$repo_dir/dist"
 info="$resources/Info.plist"
 
-for input in "$sources/ServerFiles.swift" "$sources/Open-Codex-Preview.command" \
+for input in "$sources/ServerFiles.swift" "$sources/ServerFilesPreview.command" \
     "$sources/preview_server.py" "$info" "$resources/ServerFiles.icns"; do
     if [[ ! -f "$input" || ! -r "$input" ]]; then
         printf 'Missing build input: %s\n' "$input" >&2
@@ -49,9 +49,9 @@ done
 /usr/bin/xcrun --sdk macosx lipo "$contents/MacOS/ServerFiles" -verify_arch arm64 x86_64
 
 /bin/cp -X "$info" "$contents/Info.plist"
-/bin/cp -X "$resources/ServerFiles.icns" "$sources/Open-Codex-Preview.command" \
+/bin/cp -X "$resources/ServerFiles.icns" "$sources/ServerFilesPreview.command" \
     "$sources/preview_server.py" "$contents/Resources/"
-chmod 755 "$contents/MacOS/ServerFiles" "$contents/Resources/Open-Codex-Preview.command"
+chmod 755 "$contents/MacOS/ServerFiles" "$contents/Resources/ServerFilesPreview.command"
 chmod 644 "$contents/Info.plist" "$contents/Resources/ServerFiles.icns" "$contents/Resources/preview_server.py"
 
 /usr/bin/codesign --force --sign - --timestamp=none "$app"

@@ -100,8 +100,12 @@ if [[ ! -r "$preview_source" ]]; then
   printf 'Server Files: preview_server.py is missing.\n' >&2
   exit 1
 fi
-server_arg=$(/usr/bin/gzip -c "$preview_source" | /usr/bin/base64 | /usr/bin/tr -d '\r\n')
+server_arg=$(/usr/bin/gzip -9c "$preview_source" | /usr/bin/base64 | /usr/bin/tr -d '\r\n')
 remote_command="exec python3 -u -c 'import base64,gzip,sys; exec(compile(gzip.decompress(base64.b64decode(sys.argv.pop(1))), \"<codex-preview>\", \"exec\"))' '$server_arg' '$socket_path' '$directory_arg' '$ssh_host' '$ssh_port'"
+if (( ${#remote_command} >= 131000 )); then
+  printf 'Server Files: the bundled preview worker exceeds the SSH command size limit.\n' >&2
+  exit 1
+fi
 
 printf '連線到 %s（SSH 連接埠 %s）\n' "$ssh_host" "$ssh_port"
 printf '遠端報告資料夾：%s\n' "${remote_directory:-~/reports（若不存在則使用暫存資料夾）}"
