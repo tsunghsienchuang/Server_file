@@ -110,6 +110,11 @@ private enum PasswordStore {
         return String(data: bytes, encoding: .utf8)
     }
 
+    static func alreadySaved(_ submitted: String, as savedPassword: String?) -> Bool {
+        guard let savedPassword else { return false }
+        return submitted.utf8.elementsEqual(savedPassword.utf8)
+    }
+
     static func save(_ password: String, for connection: SSHConnection) -> Bool {
         let identity = query(connection)
         let value = Data(password.utf8)
@@ -303,6 +308,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
     private var connectedTarget: SSHConnection?
     private var connectedIdentity: String?
     private var tunnel: Process?
+    private var closingTunnel: Process?
     private var tunnelInput: Pipe?
     private var tunnelOutput: Pipe?
     private var oneTimePassword: OneTimePassword?
@@ -332,7 +338,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         editor.isAutomaticTextCompletionEnabled = false
         return editor
     }()
-    private let rememberPassword = NSButton(checkboxWithTitle: "將密碼儲存在 macOS 鑰匙圈", target: nil, action: nil)
+    private let rememberPassword = NSButton(checkboxWithTitle: "記住密碼", target: nil, action: nil)
     private let connectionProgress = NSProgressIndicator()
     private let loginStatus = NSTextField(wrappingLabelWithString: "")
     private let loginButton = NSButton(title: "連線並開啟", target: nil, action: nil)
@@ -340,6 +346,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
     private var recentConnections: [RecentConnection] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        installMainMenu()
         if let button = statusItem.button {
             button.image = NSImage(systemSymbolName: "terminal", accessibilityDescription: appName)
             if button.image == nil { button.title = "預覽" }
@@ -368,6 +375,14 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
 
     func applicationWillTerminate(_ notification: Notification) {
         stopConnection()
+        if let closingTunnel {
+            // Let the worker clean up after EOF. Authentication can still be waiting for input.
+            let deadline = DispatchTime.now() + .seconds(1)
+            while closingTunnel.isRunning && DispatchTime.now() < deadline {
+                Thread.sleep(forTimeInterval: 0.025)
+            }
+            if closingTunnel.isRunning { closingTunnel.terminate() }
+        }
     }
 
     func windowWillClose(_ notification: Notification) {
@@ -386,6 +401,27 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         item.target = self
         item.isEnabled = true
         menu.addItem(item)
+    }
+
+    private func installMainMenu() {
+        let mainMenu = NSMenu()
+        let appMenuItem = NSMenuItem()
+        let appMenu = NSMenu(title: appName)
+        appMenu.addItem(withTitle: "結束 \(appName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenuItem.submenu = appMenu
+        mainMenu.addItem(appMenuItem)
+
+        let editMenuItem = NSMenuItem()
+        let editMenu = NSMenu(title: "編輯")
+        let editActions = [("復原", "undo:", "z"), ("重做", "redo:", "Z"),
+                           ("剪下", "cut:", "x"), ("複製", "copy:", "c"),
+                           ("貼上", "paste:", "v"), ("全選", "selectAll:", "a")]
+        for (title, action, key) in editActions {
+            editMenu.addItem(withTitle: title, action: Selector(action), keyEquivalent: key)
+        }
+        editMenuItem.submenu = editMenu
+        mainMenu.addItem(editMenuItem)
+        NSApp.mainMenu = mainMenu
     }
 
     private func createLoginWindow() -> NSWindow {
@@ -450,6 +486,9 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         let usernameGroup = labeledField("帳號", usernameField)
         let directoryGroup = labeledField("遠端目錄（選填）", directoryField)
         let passwordGroup = makePasswordGroup()
+        rememberPassword.target = self
+        rememberPassword.action = #selector(updatePasswordPlaceholder)
+        rememberPassword.toolTip = "SSH 登入成功後，將密碼儲存在 macOS 鑰匙圈。"
 
         loginStatus.font = .systemFont(ofSize: 12)
         loginStatus.textColor = .secondaryLabelColor
@@ -696,16 +735,21 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
             rememberPassword.state = remembersPassword ? .on : .off
             currentCredentialID = connection?.credentialID
         }
-        let passwordPlaceholder = remembersPassword
-            ? "已儲存在鑰匙圈，可直接連線" : "使用 SSH 金鑰時可留空"
-        passwordField.placeholderString = passwordPlaceholder
-        revealedPasswordField.placeholderString = passwordPlaceholder
+        updatePasswordPlaceholder()
         recentMenu.removeAllItems()
         recentMenu.addItem(withTitle: "選擇最近使用的連線")
         for saved in displayedConnections { recentMenu.addItem(withTitle: saved.recentLabel) }
         let index = connection.flatMap { displayedConnections.firstIndex(of: $0) }
         recentMenu.selectItem(at: index.map { $0 + 1 } ?? 0)
         forgetButton.isEnabled = index != nil && attempt == nil
+    }
+
+    @objc private func updatePasswordPlaceholder() {
+        let saved = formConnection.map { connection in hasRememberedPassword(for: connection) } ?? false
+        let placeholder = saved && rememberPassword.state == .on
+            ? "已記住密碼，可直接連線" : "使用 SSH 金鑰時可留空"
+        passwordField.placeholderString = placeholder
+        revealedPasswordField.placeholderString = placeholder
     }
 
     func controlTextDidChange(_ notification: Notification) {
@@ -726,7 +770,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         }
         if !otherProfile, hasRememberedPassword(for: connection),
            !PasswordStore.remove(connection) {
-            setLoginState("無法從鑰匙圈移除密碼。", failed: true)
+            setLoginState("無法移除已記住的密碼。", failed: true)
             return
         }
         recentConnections.removeAll { $0.connection == connection }
@@ -761,17 +805,8 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
             loginWindow?.makeFirstResponder(directoryField)
             return
         }
-        var password = activePasswordField.stringValue
+        let password = activePasswordField.stringValue
         let remember = rememberPassword.state == .on
-        if remember && password.isEmpty {
-            if let saved = PasswordStore.read(connection) {
-                password = saved
-            } else if hasRememberedPassword(for: connection) {
-                setLoginState("無法從鑰匙圈讀取密碼。請重新輸入。", failed: true)
-                loginWindow?.makeFirstResponder(activePasswordField)
-                return
-            }
-        }
         guard password.utf8.count <= 1023,
               !password.utf8.contains(where: { [0, 10, 13].contains($0) }) else {
             setLoginState("請輸入 1023 位元組以內、沒有換行的 SSH 密碼。", failed: true)
@@ -803,12 +838,21 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         }
     }
 
-    private func connect(_ id: UUID, target: SSHConnection, password: String, remember: Bool) async {
-        if password.isEmpty, let ready = await readyConnection(for: target) {
-            if attempt == id { openReadyPage(target, identity: ready.identity, password: password, remember: remember) }
+    private func connect(_ id: UUID, target: SSHConnection, password enteredPassword: String, remember: Bool) async {
+        if enteredPassword.isEmpty, let ready = await readyConnection(for: target) {
+            if attempt == id {
+                openReadyPage(target, identity: ready.identity, password: "", savedPassword: nil, remember: remember)
+            }
             return
         }
         guard attempt == id else { return }
+
+        let savedPassword = remember && enteredPassword.isEmpty ? PasswordStore.read(target) : nil
+        if remember && enteredPassword.isEmpty && savedPassword == nil && hasRememberedPassword(for: target) {
+            failLogin("無法讀取已記住的密碼，請重新輸入。")
+            return
+        }
+        let password = savedPassword ?? enteredPassword
 
         if let previous = releaseTunnel() {
             connectedTarget = nil
@@ -841,7 +885,9 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         repeat {
             guard attempt == id else { return }
             if let ready = await readyConnection(for: target) {
-                if attempt == id { openReadyPage(target, identity: ready.identity, password: password, remember: remember) }
+                if attempt == id {
+                    openReadyPage(target, identity: ready.identity, password: password, savedPassword: savedPassword, remember: remember)
+                }
                 return
             }
             guard attempt == id else { return }
@@ -979,24 +1025,28 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         loginWindow?.makeFirstResponder(activePasswordField)
     }
 
-    private func openReadyPage(_ target: SSHConnection, identity: String, password: String, remember: Bool) {
+    private func openReadyPage(_ target: SSHConnection, identity: String, password: String,
+                               savedPassword: String?, remember: Bool) {
         let submitted = remember ? oneTimePassword?.submittedPassword(original: password) : nil
         attempt = nil
         connectedTarget = target
         connectedIdentity = identity
         oneTimePassword?.remove()
         oneTimePassword = nil
-        let previouslySaved = hasRememberedPassword(for: target)
+        let previouslySaved = savedPassword != nil || hasRememberedPassword(for: target)
         var saved = previouslySaved
         var keychainError: String?
         if let submitted {
-            if PasswordStore.save(submitted, for: target) { saved = true }
-            else { keychainError = "已連線，但無法將密碼儲存在鑰匙圈。" }
+            if PasswordStore.alreadySaved(submitted, as: savedPassword) || PasswordStore.save(submitted, for: target) {
+                saved = true
+            } else {
+                keychainError = "已連線，但無法記住這次的密碼。"
+            }
         } else if remember && !password.isEmpty && !previouslySaved {
             keychainError = "這次連線未使用可儲存的 SSH 密碼。"
         } else if !remember && previouslySaved {
             if PasswordStore.remove(target) { saved = false }
-            else { keychainError = "已連線，但無法從鑰匙圈移除原先儲存的密碼。" }
+            else { keychainError = "已連線，但無法移除已記住的密碼。" }
         }
         recentConnections.removeAll { $0.connection == target }
         recentConnections = recentConnections.map { recent in
@@ -1007,7 +1057,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         saveRecents()
         statusLine.title = "已連線到 \(identity)"
         setLoginState(statusLine.title)
-        if let keychainError { showMessage("鑰匙圈", keychainError) }
+        if let keychainError { showMessage("記住密碼", keychainError) }
         loginWindow?.orderOut(nil)
         NSWorkspace.shared.open(filesURL)
     }
@@ -1018,8 +1068,10 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         if let writer = tunnelInput?.fileHandleForWriting { try? writer.close() }
         let previous = tunnel
         if let previous, previous.isRunning {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            closingTunnel = previous
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
                 if previous.isRunning { previous.terminate() }
+                if self?.closingTunnel === previous { self?.closingTunnel = nil }
             }
         }
         tunnelOutput?.fileHandleForReading.readabilityHandler = nil
@@ -1090,8 +1142,9 @@ struct ApplicationMain {
             Darwin.exit(runAskPass(environment))
         }
         let app = NSApplication.shared
+        // The same executable starts as a UI agent when OpenSSH runs it as askpass.
+        app.setActivationPolicy(.regular)
         let delegate = ServerFiles()
-        app.setActivationPolicy(.accessory)
         app.delegate = delegate
         withExtendedLifetime(delegate) { app.run() }
     }

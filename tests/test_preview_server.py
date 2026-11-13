@@ -96,6 +96,18 @@ class PreviewServerTests(unittest.TestCase):
                 ordered = sorted(entries, key=lambda entry: preview.order_key(entry, mode, self.root))
                 self.assertEqual([entry.path.name for entry in ordered], names)
 
+    def test_name_sort_applies_natural_order_before_search_limit(self):
+        names = ["Chapter1.txt", "chapter2.txt", "chapter10.txt"]
+        for name in reversed(names):
+            (self.root / name).touch()
+        with patch.object(preview, "SEARCH_LIMIT", 2):
+            for mode, expected in (("name-asc", names[:2]), ("name-desc", names[::-1][:2])):
+                status, _, body = self.request(f"/?q=chapter&sort={mode}", language="en-US")
+                self.assertEqual(status, 200)
+                self.assertEqual([name for name in names if name.encode() in body],
+                                 [name for name in names if name in expected])
+                self.assertLess(body.index(expected[0].encode()), body.index(expected[1].encode()))
+
     def test_content_search_skips_binary_and_symlinks_and_caps_results(self):
         term = "fjord"
         (self.root / "found.txt").write_text("Fjord water", encoding="utf-8")

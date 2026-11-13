@@ -2,8 +2,10 @@ import base64
 from bisect import bisect_left
 from codecs import getincrementaldecoder
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timezone
 import errno
+from functools import lru_cache
 from heapq import nsmallest
 import http.server
 import io
@@ -27,6 +29,7 @@ import tempfile
 import threading
 from time import monotonic, time
 from typing import NamedTuple
+import unicodedata
 from urllib.parse import parse_qs, quote_from_bytes, unquote, urlencode, urlsplit
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -127,6 +130,10 @@ UI_TRANSLATIONS = {
     "已在伺服器重新命名": "Renamed on the server",
     "已復原 {name} 的移動": "Restored {name} to its original folder",
     "已更新": "Updated",
+    "重新整理": "Refresh",
+    "正在重新整理檔案…": "Refreshing files…",
+    "檔案清單已更新": "File list updated",
+    "無法重新整理檔案。請再試一次。": "Could not refresh files. Try again.",
     "已有同名檔案": "A file with this name already exists",
     "已有同名檔案或資料夾": "A file or folder with this name already exists",
     "已移到伺服器回收區": "Moved to server Trash",
@@ -420,6 +427,10 @@ UI_TRANSLATIONS = {
     "已在伺服器重新命名": "サーバー上で名前を変更しました",
     "已復原 {name} 的移動": "{name} を元のフォルダに戻しました",
     "已更新": "更新しました",
+    "重新整理": "更新",
+    "正在重新整理檔案…": "ファイルを更新中…",
+    "檔案清單已更新": "ファイル一覧を更新しました",
+    "無法重新整理檔案。請再試一次。": "ファイルを更新できませんでした。もう一度お試しください。",
     "已有同名檔案": "同じ名前のファイルがすでにあります",
     "已有同名檔案或資料夾": "同じ名前のファイルまたはフォルダがすでにあります",
     "已移到伺服器回收區": "サーバーのごみ箱に移動しました",
@@ -713,6 +724,10 @@ UI_TRANSLATIONS = {
     "已在伺服器重新命名": "서버에서 이름을 바꿨습니다",
     "已復原 {name} 的移動": "{name} 파일을 원래 폴더로 되돌렸습니다",
     "已更新": "업데이트했습니다",
+    "重新整理": "새로 고침",
+    "正在重新整理檔案…": "파일을 새로 고치는 중…",
+    "檔案清單已更新": "파일 목록을 업데이트했습니다",
+    "無法重新整理檔案。請再試一次。": "파일을 새로 고칠 수 없습니다. 다시 시도하세요.",
     "已有同名檔案": "같은 이름의 파일이 이미 있습니다",
     "已有同名檔案或資料夾": "같은 이름의 파일 또는 폴더가 이미 있습니다",
     "已移到伺服器回收區": "서버 휴지통으로 이동했습니다",
@@ -1006,6 +1021,10 @@ UI_TRANSLATIONS = {
     "已在伺服器重新命名": "已在服务器重命名",
     "已復原 {name} 的移動": "已撤销 {name} 的移动",
     "已更新": "已更新",
+    "重新整理": "刷新",
+    "正在重新整理檔案…": "正在刷新文件…",
+    "檔案清單已更新": "文件列表已更新",
+    "無法重新整理檔案。請再試一次。": "无法刷新文件。请重试。",
     "已有同名檔案": "已有同名文件",
     "已有同名檔案或資料夾": "已有同名文件或文件夹",
     "已移到伺服器回收區": "已移到服务器回收站",
@@ -1833,6 +1852,17 @@ PAGE_STYLE = """
   .count { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--quiet); margin: 0; }
   #preview-results[aria-busy="true"] .count::before { content: ""; flex: 0 0 11px; height: 11px; border: 1.5px solid #c0cee1; border-top-color: #3a70a7; border-radius: 50%; }
   .list-meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 4px 12px; text-align: right; }
+  .refresh-files { gap: 6px; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+  .refresh-files[aria-disabled="true"] { cursor: wait; }
+  .refresh-files svg { width: 14px; height: 14px; }
+  .refresh-feedback {
+    position: fixed; z-index: 4; inset-inline-end: 20px; inset-block-end: 20px;
+    max-width: calc(100vw - 40px); margin: 0; padding: 9px 12px;
+    border: 1px solid var(--theme-border); border-radius: 8px;
+    background: var(--theme-surface-raised); color: var(--theme-text);
+    box-shadow: 0 6px 18px var(--theme-shadow); font-size: 13px; overflow-wrap: anywhere;
+  }
+  .refresh-feedback[data-refresh-state="error"] { border-color: var(--theme-focus); }
   .date-label { font-size: 12px; color: #526680; }
   .sort-toggle { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border: 1px solid #d4dfed; border-radius: 8px; background: #fbfdff; color: #314d73; text-decoration: none; font-size: 12px; font-weight: 650; white-space: nowrap; }
   .sort-toggle:hover { border-color: #91b7e2; background: #e4efff; }
@@ -2041,6 +2071,7 @@ PAGE_STYLE = """
     .copy-feedback:not([hidden]), .download-progress:not([hidden]) { animation: page-arrive 170ms var(--ease); }
     [data-success-fading] { opacity: 0; transition: opacity 600ms ease-out; }
     #preview-results[aria-busy="true"] .count::before { animation: search-spin 700ms linear infinite; }
+    .refresh-files[data-refreshing] svg { animation: search-spin 850ms linear infinite; }
     .hero form, .hero form button, .home-link, .location a, .entry, .entry-action, .sort-toggle,
     .upload-panel, .upload-picker, .dialog-button { transition: background-color 150ms var(--ease), border-color 150ms var(--ease), box-shadow 150ms var(--ease), color 150ms var(--ease); }
     .entry .icon svg { transition: transform 150ms var(--ease); }
@@ -2646,6 +2677,8 @@ PREVIEW_SCRIPT = r"""
   const results = document.getElementById("preview-results");
   const status = document.getElementById("preview-status");
   const error = document.getElementById("preview-error");
+  const refreshFeedback = document.querySelector("[data-refresh-feedback]");
+  const refreshSelector = "[data-refresh-files]";
   const copyFeedback = document.getElementById("copy-feedback");
   const copyMessage = document.getElementById("copy-message");
   const copyFallback = document.getElementById("copy-fallback");
@@ -2663,6 +2696,7 @@ PREVIEW_SCRIPT = r"""
   let generation = 0;
   let composing = false;
   let previewRequest;
+  let refreshing = false;
   formatFileDates();
   let browseSnapshot = input.value.trim() ? null : results.cloneNode(true);
   const searchPrefix = form.dataset.searchPrefix;
@@ -2710,10 +2744,11 @@ PREVIEW_SCRIPT = r"""
     }
   }
 
-  async function refreshFolderColumns() {
+  async function refreshFolderColumns(force = false) {
     if (!columnNavigation) return;
     columnRequest?.abort();
     columnRequest = null;
+    if (force) delete columnNavigation.dataset.source;
     if (displayRoot.dataset.fileView !== "columns" || input.value.trim() || !searchPrefix) {
       columnNavigation.hidden = true;
       return;
@@ -2727,17 +2762,26 @@ PREVIEW_SCRIPT = r"""
       columnNavigation.hidden = !columnNavigation.childElementCount;
       return;
     }
-    columnNavigation.hidden = true;
+    if (!force) columnNavigation.hidden = true;
     const request = new AbortController();
     columnRequest = request;
     try {
-      const response = await fetch(url, { signal: request.signal });
+      const response = await fetch(url, { signal: request.signal, cache: "no-store", redirect: "error" });
       if (!response.ok) return;
       const fragment = new DOMParser().parseFromString(await response.text(), "text/html");
       if (columnRequest !== request) return;
+      const scroll = force ? {
+        left: columnNavigation.scrollLeft,
+        columns: Array.from(columnNavigation.querySelectorAll("ul"), list => list.scrollTop),
+      } : null;
       columnNavigation.replaceChildren(...fragment.body.children);
       columnNavigation.dataset.source = url.href;
       columnNavigation.hidden = !columnNavigation.childElementCount;
+      if (scroll) {
+        columnNavigation.scrollLeft = scroll.left;
+        columnNavigation.querySelectorAll("ul").forEach((list, index) => { list.scrollTop = scroll.columns[index] || 0; });
+        return;
+      }
       columnNavigation.scrollLeft = columnNavigation.scrollWidth;
       for (const current of columnNavigation.querySelectorAll('[aria-current="true"]')) {
         const list = current.closest("ul");
@@ -3123,7 +3167,7 @@ PREVIEW_SCRIPT = r"""
 
     async function readTextCover(url, container, symbol) {
       try {
-        const response = await fetch(url, { redirect: "error" });
+        const response = await fetch(url, { redirect: "error", cache: "no-store" });
         if (!response.ok || response.headers.get("Content-Type")?.split(";")[0] !== "text/plain") return;
         const value = await response.text();
         if (!container.isConnected || !value.trim()) return;
@@ -3133,7 +3177,7 @@ PREVIEW_SCRIPT = r"""
       } catch {}
     }
 
-    function makeCard(record, coverScope) {
+    function makeCard(record, coverScope, freshCover) {
       const { path, name } = filePath(record.path);
       const button = document.createElement("button");
       button.type = "button";
@@ -3157,7 +3201,7 @@ PREVIEW_SCRIPT = r"""
           image.alt = "";
           image.draggable = false;
           image.addEventListener("load", () => symbol.replaceWith(image), { once: true });
-          image.src = path + "?cover=1";
+          image.src = path + "?cover=1" + (freshCover ? "&refresh=" + freshCover : "");
         } else if (record.cover === "text") {
           readTextCover(path + "?cover=1", cover, symbol);
         }
@@ -3173,7 +3217,9 @@ PREVIEW_SCRIPT = r"""
       return button;
     }
 
-    function render(scopeVerified = false) {
+    function render(scopeVerified = false, freshCover = "") {
+      const selected = Array.from(cards.values()).find(card => card.button === document.activeElement)?.record.path;
+      const scroll = [list.scrollLeft, list.scrollTop];
       panel.hidden = !toggle.checked;
       clear.hidden = !records.length;
       empty.hidden = Boolean(records.length);
@@ -3182,15 +3228,18 @@ PREVIEW_SCRIPT = r"""
       if (toggle.checked) {
         for (const record of records) {
           const previous = cards.get(record.path);
-          const same = previous && ["kind", "language", "open", "cover"].every(key => previous.record[key] === record[key]);
+          const same = previous && !(freshCover && record.cover) &&
+            ["kind", "language", "open", "cover"].every(key => previous.record[key] === record[key]);
           if (!same && record.cover && !coverScope) {
             coverScope = scopeVerified ? Promise.resolve(true) : verifyScope().catch(() => false);
           }
-          next.set(record.path, same ? previous : { record, button: makeCard(record, record.cover ? coverScope : null) });
+          next.set(record.path, same ? previous : { record, button: makeCard(record, record.cover ? coverScope : null, freshCover) });
         }
       }
       cards = next;
       list.replaceChildren(...Array.from(cards.values(), card => card.button));
+      list.scrollTo(...scroll);
+      if (selected) next.get(selected)?.button.focus({ preventScroll: true });
     }
 
     function restore() {
@@ -3240,6 +3289,9 @@ PREVIEW_SCRIPT = r"""
 
     return {
       enabled: () => toggle.checked,
+      refreshCovers() {
+        if (toggle.checked && records.some(record => record.cover)) render(false, Date.now().toString());
+      },
       verifyScope,
       fromButton(button) {
         try {
@@ -3634,6 +3686,26 @@ PREVIEW_SCRIPT = r"""
     if (activeRequest) activeRequest.abort();
     results.removeAttribute("aria-busy");
     generation += 1;
+    if (refreshing) {
+      setRefreshing(false);
+      refreshFeedback.hidden = true;
+    }
+  }
+
+  function showRefreshFeedback(message, state) {
+    resetSuccessStatus(refreshFeedback);
+    refreshFeedback.dataset.refreshState = state;
+    refreshFeedback.textContent = message;
+    refreshFeedback.hidden = false;
+    if (state === "success") scheduleSuccessStatus(refreshFeedback, { delay: 2000 });
+  }
+
+  function setRefreshing(value) {
+    refreshing = value;
+    const button = results.querySelector(refreshSelector);
+    button?.toggleAttribute("data-refreshing", value);
+    if (value) button?.setAttribute("aria-disabled", "true");
+    else button?.removeAttribute("aria-disabled");
   }
 
   function applyLocalSearch(query, searchContents) {
@@ -3673,26 +3745,30 @@ PREVIEW_SCRIPT = r"""
       ? `搜尋中 · 已顯示 ${seen.size} 個項目` : "搜尋中…";
   }
 
-  function queueSearch(delay = 180, restoreSortFocus = false, filterNow = false) {
+  function queueSearch(delay = 180, restoreSortFocus = false, filterNow = false, manualRefresh = false) {
     cancelSearch();
     error.hidden = true;
     if (composing) return;
     const query = input.value.trim();
     const searchContents = contentMode?.checked === true;
-    refreshFolderColumns();
+    if (!manualRefresh) refreshFolderColumns();
     const url = query ? new URL(form.action) : new URL(browseUrl);
     if (query) url.searchParams.set("q", query);
     if (sort.value !== "newest") url.searchParams.set("sort", sort.value);
     if (hidden.value === "1") url.searchParams.set("hidden", "1");
     if (searchContents) url.searchParams.set("content", "1");
     if (filterNow) applyLocalSearch(query, searchContents);
-    if (window.location.href !== url.href) window.history.replaceState(null, "", url);
+    if (!manualRefresh && window.location.href !== url.href) window.history.replaceState(null, "", url);
     results.setAttribute("aria-busy", "true");
+    if (manualRefresh) {
+      setRefreshing(true);
+      showRefreshFeedback("正在重新整理檔案…", "pending");
+    }
     const requestedGeneration = generation;
-    timer = window.setTimeout(() => updateResults(url, query, requestedGeneration, restoreSortFocus, searchContents), delay);
+    timer = window.setTimeout(() => updateResults(url, query, requestedGeneration, restoreSortFocus, searchContents, manualRefresh), delay);
   }
 
-  function showSearchResults(html, complete, query, restoreSortFocus, searchContents) {
+  function showSearchResults(html, complete, query, restoreSortFocus, searchContents, manualRefresh) {
     const page = new DOMParser().parseFromString(html, "text/html");
     const nextResults = page.getElementById("preview-results");
     if (!nextResults) throw new Error("Preview results missing");
@@ -3700,6 +3776,12 @@ PREVIEW_SCRIPT = r"""
       return;
     }
     const focusedSort = restoreSortFocus && document.activeElement?.dataset.sortField;
+    const refreshButton = manualRefresh ? results.querySelector(refreshSelector) : null;
+    const focusedRefresh = refreshButton && document.activeElement === refreshButton;
+    const oldList = manualRefresh ? results.querySelector(":scope > ul") : null;
+    const scroll = oldList ? [oldList.scrollLeft, oldList.scrollTop] : null;
+    const pageScroll = manualRefresh ? [window.scrollX, window.scrollY] : null;
+    if (refreshButton) nextResults.querySelector(refreshSelector)?.replaceWith(refreshButton);
     results.replaceChildren(...nextResults.childNodes);
     const nextTools = page.querySelector(".hero-tools");
     const tools = document.querySelector(".hero-tools");
@@ -3715,6 +3797,9 @@ PREVIEW_SCRIPT = r"""
     }
     formatFileDates();
     enableDragDownloads();
+    if (scroll) results.querySelector(":scope > ul")?.scrollTo(...scroll);
+    if (pageScroll) window.scrollTo(...pageScroll);
+    if (focusedRefresh) results.querySelector(refreshSelector)?.focus({ preventScroll: true });
     if (focusedSort) {
       const visibleSort = [...results.querySelectorAll("[data-sort-toggle]")]
         .find(link => link.dataset.sortField === focusedSort && link.getClientRects().length);
@@ -3761,17 +3846,17 @@ PREVIEW_SCRIPT = r"""
     }
   }
 
-  async function updateResults(url, query, requestedGeneration, restoreSortFocus, searchContents) {
+  async function updateResults(url, query, requestedGeneration, restoreSortFocus, searchContents, manualRefresh) {
     const controller = new AbortController();
     activeRequest = controller;
     try {
       const requestUrl = new URL(url);
-      if (query) requestUrl.searchParams.set("live", "1");
-      const response = await fetch(requestUrl, { signal: controller.signal });
+      if (query && !manualRefresh) requestUrl.searchParams.set("live", "1");
+      const response = await fetch(requestUrl, { signal: controller.signal, cache: "no-store", redirect: "error" });
       if (!response.ok) throw new Error("Preview request failed");
       const update = (html, complete) => {
         if (requestedGeneration === generation) {
-          showSearchResults(html, complete, query, restoreSortFocus, searchContents);
+          showSearchResults(html, complete, query, restoreSortFocus, searchContents, manualRefresh);
         }
       };
       if (query && response.headers.get("Content-Type")?.includes("application/x-ndjson")) {
@@ -3779,13 +3864,25 @@ PREVIEW_SCRIPT = r"""
       } else {
         update(await response.text(), true);
       }
+      if (manualRefresh && requestedGeneration === generation) {
+        if (query) browseSnapshot = null;
+        refreshFolderColumns(true);
+        recentFiles?.refreshCovers();
+        showRefreshFeedback("檔案清單已更新", "success");
+      }
     } catch (failure) {
       if (requestedGeneration === generation && failure.name !== "AbortError") {
-        error.hidden = false;
-        results.querySelector(".count").textContent = "更新中斷";
+        if (manualRefresh) showRefreshFeedback("無法重新整理檔案。請再試一次。", "error");
+        else {
+          error.hidden = false;
+          results.querySelector(".count").textContent = "更新中斷";
+        }
       }
     } finally {
-      if (requestedGeneration === generation) results.removeAttribute("aria-busy");
+      if (requestedGeneration === generation) {
+        results.removeAttribute("aria-busy");
+        if (manualRefresh) setRefreshing(false);
+      }
       if (activeRequest === controller) activeRequest = null;
     }
   }
@@ -3830,6 +3927,10 @@ PREVIEW_SCRIPT = r"""
       return;
     }
     if (modified) return;
+    if (event.target.closest(refreshSelector)) {
+      if (!refreshing && !composing) queueSearch(0, false, false, true);
+      return;
+    }
     const sortLink = event.target.closest("[data-sort-toggle]");
     if (sortLink) {
       event.preventDefault();
@@ -4073,7 +4174,7 @@ FILE_COVER_SCRIPT = """
 
   async function load(tile, controller) {
     try {
-      const response = await fetch(tile.dataset.coverUrl, { signal: controller.signal, redirect: "error" });
+      const response = await fetch(tile.dataset.coverUrl, { signal: controller.signal, redirect: "error", cache: "no-store" });
       if (!response.ok) throw new Error("Cover unavailable");
       const type = response.headers.get("Content-Type")?.split(";")[0];
       let cover;
@@ -5434,6 +5535,7 @@ def folder_entries(root, folder, show_hidden=False):
 
 SORT_LABELS = {
     "newest": "由新到舊", "oldest": "由舊到新",
+    "name-asc": "升冪", "name-desc": "降冪",
     "largest": "由大到小", "smallest": "由小到大",
     "kind-asc": "升冪", "kind-desc": "降冪",
 }
@@ -5444,9 +5546,95 @@ def sort_mode(params):
     return mode if mode in SORT_LABELS else "newest"
 
 
-def order_key(entry, mode, root):
+@lru_cache(maxsize=1)
+def icu_collation_api():
+    try:
+        import ctypes
+        from ctypes.util import find_library
+
+        library = ("/usr/lib/libicucore.A.dylib" if sys.platform == "darwin"
+                   else find_library("icui18n"))
+        if not library:
+            return None
+        icu = ctypes.CDLL(library)
+        version = re.search(r"\.so\.(\d+)", library)
+
+        def bind(name, result, *args):
+            function = getattr(icu, name, None)
+            if function is None and version:
+                function = getattr(icu, name + "_" + version[1])
+            if function is None:
+                raise AttributeError(name)
+            function.restype, function.argtypes = result, args
+            return function
+
+        pointer, integer = ctypes.c_void_p, ctypes.c_int32
+        error = ctypes.POINTER(integer)
+        return (
+            ctypes,
+            bind("ucol_open", pointer, ctypes.c_char_p, error),
+            bind("ucol_close", None, pointer),
+            bind("ucol_setAttribute", None, pointer, integer, integer, error),
+            bind("ucol_getSortKey", integer, pointer, pointer, integer, pointer, integer),
+        )
+    except (ImportError, OSError, AttributeError):
+        return None
+
+
+def unicode_name_key(name):
+    # Portable natural order when the server has no ICU library.
+    normalized = unicodedata.normalize("NFKD", name).casefold()
+    base = "".join(char for char in normalized if not unicodedata.combining(char))
+    parts = re.split(r"(\d+)", base)
+    return (tuple(int(part) if index % 2 else part for index, part in enumerate(parts)), normalized)
+
+
+@contextmanager
+def listing_order(mode, root, language):
+    api = icu_collation_api() if mode in ("name-asc", "name-desc") else None
+    if api:
+        ctypes, open_collator, close_collator, set_attribute, get_sort_key = api
+        locale = {"zh-Hant": b"zh_Hant@collation=stroke", "zh-Hans": b"zh_Hans@collation=pinyin",
+                  "ja": b"ja", "ko": b"ko", "en": b"en"}.get(language, b"")
+        status = ctypes.c_int32()
+        collator = open_collator(locale, ctypes.byref(status))
+        if collator:
+            try:
+                set_attribute(collator, 7, 17, ctypes.byref(status))  # UCOL_NUMERIC_COLLATION = UCOL_ON
+                set_attribute(collator, 5, 1, ctypes.byref(status))   # UCOL_STRENGTH = UCOL_SECONDARY
+                if status.value <= 0:
+                    encoding = "utf-16-le" if sys.byteorder == "little" else "utf-16-be"
+
+                    def icu_name_key(name):
+                        encoded = name.encode(encoding, errors="surrogatepass")
+                        result = ctypes.create_string_buffer(max(64, len(encoded) * 2))
+                        length = get_sort_key(collator, encoded, len(encoded) // 2, result, len(result))
+                        if length > len(result):
+                            result = ctypes.create_string_buffer(length)
+                            get_sort_key(collator, encoded, len(encoded) // 2, result, len(result))
+                        return result.raw[:length]
+
+                    yield lambda entry: order_key(entry, mode, root, icu_name_key)
+                    return
+            finally:
+                close_collator(collator)
+    yield lambda entry: order_key(entry, mode, root)
+
+
+@dataclass(frozen=True)
+class DescendingNameKey:
+    key: tuple
+
+    def __lt__(self, other):
+        return self.key > other.key
+
+
+def order_key(entry, mode, root, name_key=unicode_name_key):
     path = entry.path.as_posix()
     tie_breaker = (path.casefold(), path)
+    if mode in ("name-asc", "name-desc"):
+        key = (name_key(entry.path.name), *tie_breaker)
+        return DescendingNameKey(key) if mode == "name-desc" else key
     if mode in ("largest", "smallest"):
         known = not entry.is_dir and entry.size_bytes >= 0
         size = entry.size_bytes if known else 0
@@ -5981,13 +6169,15 @@ def matching_entries(root, query, folder, show_hidden, content_search=None):
             yield entry
 
 
-def search_entries(root, query, mode, folder=None, show_hidden=False, content_search=None):
-    matches = nsmallest(SEARCH_LIMIT + 1, matching_entries(root, query, folder or root, show_hidden, content_search),
-                        key=lambda entry: order_key(entry, mode, root))
+def search_entries(root, query, mode, folder=None, show_hidden=False, content_search=None, *, language="zh-Hant"):
+    with listing_order(mode, root, language) as sort_key:
+        matches = nsmallest(SEARCH_LIMIT + 1,
+                            matching_entries(root, query, folder or root, show_hidden, content_search),
+                            key=sort_key)
     return matches[:SEARCH_LIMIT], len(matches) > SEARCH_LIMIT
 
 
-def folder_column_navigation(root, folder, mode, show_hidden, content_search=False):
+def folder_column_navigation(root, folder, mode, show_hidden, content_search=False, *, language="zh-Hant"):
     if not folder.parts:
         return ""
 
@@ -6010,7 +6200,9 @@ def folder_column_navigation(root, folder, mode, show_hidden, content_search=Fal
                         folders.append(ReportEntry(ancestor / child.name, True, info.st_mtime_ns))
 
             links = []
-            for entry in sorted(folders, key=lambda entry: order_key(entry, mode, root)):
+            with listing_order(mode, root, language) as sort_key:
+                ordered_folders = sorted(folders, key=sort_key)
+            for entry in ordered_folders:
                 name = entry.path.name
                 directory_url = entry_href(entry.path, True)
                 href = escape(listing_href(directory_url, mode, show_hidden=show_hidden,
@@ -6070,6 +6262,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
         breadcrumbs.append(f'<li>{separator}{crumb}</li>')
     breadcrumb = f'<nav class="folder-breadcrumb" aria-label="{tr("伺服器路徑")}"><ol>{"".join(breadcrumbs)}</ol></nav>'
     sort_fields = (
+        ("name", "名稱", "name-asc", "name-desc"),
         ("date", "修改日期", "newest", "oldest"),
         ("size", "大小", "largest", "smallest"),
         ("kind", "種類", "kind-asc", "kind-desc"),
@@ -6083,7 +6276,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
         action = tr("切換為 {direction}").format(direction=tr(SORT_LABELS[next_mode]))
         state = f"{tr(SORT_LABELS[mode])} · " if active else ""
         label = tr(label)
-        arrow = "↑" if mode in ("oldest", "smallest", "kind-asc") else "↓"
+        arrow = "↑" if mode in ("oldest", "smallest", "kind-asc", "name-asc") else "↓"
         indicator = f'<span class="sort-arrow" aria-hidden="true">{arrow}</span>' if active else ""
         return (
             f'<a class="{css_class}" data-sort-field="{field}" data-sort-toggle="{next_mode}" href="{href}" '
@@ -6091,7 +6284,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
         )
 
     file_list_header = (
-        f'<div class="file-list-header"><span>{tr("名稱")}</span>'
+        '<div class="file-list-header">'
         + "".join(sort_link(*field, "file-list-sort") for field in sort_fields)
         + '<span aria-hidden="true"></span></div>'
     )
@@ -6163,9 +6356,15 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
             )
         )
     limit = f'<p class="content-limit">{tr("已達內容搜尋上限，請在更小的資料夾搜尋。")}</p>' if content_limited else ""
+    refresh_label = tr("重新整理")
+    refresh_control = f"""<button class="sort-toggle refresh-files" type="button" data-refresh-files
+ title="{refresh_label}" aria-controls="preview-results"><svg viewBox="0 0 16 16" fill="none"
+ stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+ <path d="M13.4 5.7A5.6 5.6 0 0 0 3 5.5m0 0V2.4m0 3.1h3.1m-3.5 4.8A5.6 5.6 0 0 0 13 10.5m0 0v3.1m0-3.1H9.9"/>
+ </svg>{refresh_label}</button>"""
     results = f"""<div id="preview-results">{nav}{upload_panel}<div class="list-title">
 <div class="list-heading"><h2 class="search-heading">{shown}</h2>{breadcrumb}</div>
-<div class="list-meta"><p class="count">{count}</p>{hidden_control}
+<div class="list-meta"><p class="count">{count}</p>{refresh_control}{hidden_control}
 {sort_controls}</div></div>{limit}{file_list_header}{body}</div>"""
     if results_only:
         return results
@@ -6216,6 +6415,7 @@ def preview_page(root, entries, mode, folder=None, query="", truncated=False,
 {recents}
 <div id="file-browser" class="file-browser">{column_navigation}{results}</div>
 </main>
+<p class="refresh-feedback" data-refresh-feedback role="status" aria-live="polite" hidden></p>
 <div id="copy-feedback" class="copy-feedback" hidden>
 <span id="copy-message" role="status"></span>
 <input class="copy-fallback" id="copy-fallback" aria-label="{tr("伺服器路徑")}" readonly hidden>
@@ -6560,7 +6760,7 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 columns = folder_column_navigation(root, path.relative_to(root),
                                                    sort_mode(params), params.get("hidden") == ["1"],
-                                                   content_search=search_content)
+                                                   content_search=search_content, language=self.language)
             except (OSError, ValueError):
                 self.send_error(404)
                 return None
@@ -6640,27 +6840,28 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
             if content_search is not None:
                 emit(False)
                 sent = True
-            for entry, shallow_done in walk:
-                now = monotonic()
-                if shallow_done or now - last_checked >= 0.1:
-                    if self.search_peer_closed(watcher):
-                        return None
-                    last_checked = now
-                if entry is not None:
-                    count += 1
-                    key = order_key(entry, mode, root)
-                    if len(keys) < SEARCH_LIMIT or key < keys[-1]:
-                        position = bisect_left(keys, key)
-                        keys.insert(position, key)
-                        entries.insert(position, entry)
-                        if len(keys) > SEARCH_LIMIT:
-                            keys.pop()
-                            entries.pop()
-                        changed = True
-                    changed = changed or count == SEARCH_LIMIT + 1
-                if (shallow_done and (not sent or changed)) or (changed and now - last_sent >= LIVE_SEARCH_INTERVAL):
-                    emit(False)
-                    sent, changed, last_sent = True, False, now
+            with listing_order(mode, root, self.language) as sort_key:
+                for entry, shallow_done in walk:
+                    now = monotonic()
+                    if shallow_done or now - last_checked >= 0.1:
+                        if self.search_peer_closed(watcher):
+                            return None
+                        last_checked = now
+                    if entry is not None:
+                        count += 1
+                        key = sort_key(entry)
+                        if len(keys) < SEARCH_LIMIT or key < keys[-1]:
+                            position = bisect_left(keys, key)
+                            keys.insert(position, key)
+                            entries.insert(position, entry)
+                            if len(keys) > SEARCH_LIMIT:
+                                keys.pop()
+                                entries.pop()
+                            changed = True
+                        changed = changed or count == SEARCH_LIMIT + 1
+                    if (shallow_done and (not sent or changed)) or (changed and now - last_sent >= LIVE_SEARCH_INTERVAL):
+                        emit(False)
+                        sent, changed, last_sent = True, False, now
             if not self.search_peer_closed(watcher):
                 emit(True)
         except OSError:
@@ -6831,13 +7032,16 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
         query = params.get("q", [""])[0][:120].strip()
         search_content = params.get("content") == ["1"]
         content_search = ContentSearch(query) if query and search_content else None
+        language = self.language
         truncated = False
         try:
             relative_folder = folder.relative_to(root)
             if query:
-                entries, truncated = search_entries(root, query, mode, folder, show_hidden, content_search)
+                entries, truncated = search_entries(root, query, mode, folder, show_hidden, content_search,
+                                                    language=language)
             else:
-                entries = sorted(folder_entries(root, folder, show_hidden), key=lambda entry: order_key(entry, mode, root))
+                with listing_order(mode, root, language) as sort_key:
+                    entries = sorted(folder_entries(root, folder, show_hidden), key=sort_key)
         except (OSError, ValueError):
             self.send_error(404)
             return None
@@ -6845,7 +7049,7 @@ class PreviewHandler(http.server.SimpleHTTPRequestHandler):
             root, entries, mode, folder=relative_folder if relative_folder.parts else None,
             query=query, truncated=truncated, upload_token=self.upload_token if self.home_view else "",
             show_hidden=show_hidden, server_identity=getattr(self.server, "preview_identity", ""),
-            language=self.language, content_search=search_content,
+            language=language, content_search=search_content,
             content_limited=content_search is not None and content_search.limited, recent_scope=self.recent_scope,
             storage=folder_storage_status(folder) if self.home_view else None,
         ))
