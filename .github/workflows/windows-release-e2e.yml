@@ -13,7 +13,6 @@ concurrency:
 
 jobs:
   released-windows-x64:
-    if: false
     runs-on: windows-2025
     timeout-minutes: 12
     steps:
@@ -26,8 +25,10 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $package = Join-Path $env:RUNNER_TEMP 'server-files-release'
           New-Item -ItemType Directory -Path $package | Out-Null
-          $zip = Join-Path $package 'Server-Files-1.2.4-Windows-x64.zip'
-          Invoke-WebRequest -Uri 'https://github.com/tsunghsienchuang/Server_file/releases/download/v1.2.4/Server-Files-1.2.4-Windows-x64.zip' -OutFile $zip
+          $asset = 'Server-Files-1.2.4-Windows-x64.zip'
+          $zip = Join-Path $package $asset
+          $releaseUri = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/releases/download/v1.2.4/$asset"
+          Invoke-WebRequest -Uri $releaseUri -OutFile $zip
           $digest = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($digest -cne '120e04b9a7b17cd2ba029e9b9356b7089c8d4ce97847e465a7980b8e52bb7121') { throw 'Released ZIP SHA-256 mismatch' }
           Expand-Archive -LiteralPath $zip -DestinationPath $package
@@ -58,8 +59,10 @@ jobs:
           if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne 'Arm64') { throw 'Expected native Windows ARM64' }
           $package = Join-Path $env:RUNNER_TEMP 'server-files-release-arm64'
           New-Item -ItemType Directory -Path $package | Out-Null
-          $zip = Join-Path $package 'Server-Files-1.2.4-Windows-arm64.zip'
-          Invoke-WebRequest -Uri 'https://github.com/tsunghsienchuang/Server_file/releases/download/v1.2.4/Server-Files-1.2.4-Windows-arm64.zip' -OutFile $zip
+          $asset = 'Server-Files-1.2.4-Windows-arm64.zip'
+          $zip = Join-Path $package $asset
+          $releaseUri = "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/releases/download/v1.2.4/$asset"
+          Invoke-WebRequest -Uri $releaseUri -OutFile $zip
           if ((Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant() -cne '89a4047fbd717bb546aae545e874310f3eb7ffc3c255bb2f115a546c0865e9ed') { throw 'Released ZIP SHA-256 mismatch' }
           Expand-Archive -LiteralPath $zip -DestinationPath $package
           $launcher = Join-Path $package 'ServerFiles.exe'
