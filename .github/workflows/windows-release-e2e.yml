@@ -25,15 +25,15 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $package = Join-Path $env:RUNNER_TEMP 'server-files-release'
           New-Item -ItemType Directory -Path $package | Out-Null
-          $zip = Join-Path $package 'Server-Files-1.2.0-Windows-x64.zip'
-          Invoke-WebRequest -Uri 'https://github.com/tsunghsienchuang/Server_file/releases/download/v1.2.0/Server-Files-1.2.0-Windows-x64.zip' -OutFile $zip
+          $zip = Join-Path $package 'Server-Files-1.2.4-Windows-x64.zip'
+          Invoke-WebRequest -Uri 'https://github.com/tsunghsienchuang/Server_file/releases/download/v1.2.4/Server-Files-1.2.4-Windows-x64.zip' -OutFile $zip
           $digest = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
-          if ($digest -cne 'd7347cfaaa107107057e622a5ede6748a16ac82cfe8eb948fe92e086703ec46d') { throw 'Released ZIP SHA-256 mismatch' }
+          if ($digest -cne '120e04b9a7b17cd2ba029e9b9356b7089c8d4ce97847e465a7980b8e52bb7121') { throw 'Released ZIP SHA-256 mismatch' }
           Expand-Archive -LiteralPath $zip -DestinationPath $package
           $launcher = Join-Path $package 'ServerFiles.exe'
           if (-not (Test-Path -LiteralPath $launcher -PathType Leaf)) { throw 'Released executable missing from ZIP' }
           "SERVER_FILES_RELEASE_EXE=$launcher" >> $env:GITHUB_ENV
-          Write-Host 'Downloaded, verified, and extracted the published v1.2.0 x64 ZIP on Windows.'
+          Write-Host 'Downloaded, verified, and extracted the published v1.2.4 x64 ZIP on Windows.'
       - name: Open the release and verify SSH password login in Edge
         shell: pwsh
         run: ./.github/e2e/run-release.ps1 -ExePath $env:SERVER_FILES_RELEASE_EXE

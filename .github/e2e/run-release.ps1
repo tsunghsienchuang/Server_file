@@ -62,7 +62,7 @@ try {
         else { 'The default-browser handoff was not confirmed on the CI desktop. Edge rendering was verified by navigating directly.' }
     Write-Host $autoOpen
     @"
-### Published Server Files v1.2.0 on Windows x64
+### Published Server Files v1.2.4 on Windows x64
 
 - Downloaded the released ZIP from GitHub and verified its SHA-256 before extracting it.
 - Opened the released executable through the Windows shell with the same open action used by Explorer.
