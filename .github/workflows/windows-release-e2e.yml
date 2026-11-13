@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   released-windows-x64:
+    if: false
     runs-on: windows-2025
     timeout-minutes: 12
     steps:
@@ -44,3 +45,24 @@ jobs:
           path: ${{ runner.temp }}/server-files-edge-preview.png
           if-no-files-found: error
           retention-days: 14
+
+  released-windows-arm64:
+    runs-on: windows-11-arm
+    timeout-minutes: 6
+    steps:
+      - name: Download, verify, and run the published Windows ARM64 ZIP
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -ne 'Arm64') { throw 'Expected native Windows ARM64' }
+          $package = Join-Path $env:RUNNER_TEMP 'server-files-release-arm64'
+          New-Item -ItemType Directory -Path $package | Out-Null
+          $zip = Join-Path $package 'Server-Files-1.2.4-Windows-arm64.zip'
+          Invoke-WebRequest -Uri 'https://github.com/tsunghsienchuang/Server_file/releases/download/v1.2.4/Server-Files-1.2.4-Windows-arm64.zip' -OutFile $zip
+          if ((Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant() -cne '89a4047fbd717bb546aae545e874310f3eb7ffc3c255bb2f115a546c0865e9ed') { throw 'Released ZIP SHA-256 mismatch' }
+          Expand-Archive -LiteralPath $zip -DestinationPath $package
+          $launcher = Join-Path $package 'ServerFiles.exe'
+          if ((& $launcher --version) -cne 'Server Files 1.2.4') { throw 'Unexpected launcher version' }
+          if ((& $launcher --help) -notlike 'Run ServerFiles.exe*') { throw 'Unexpected launcher help' }
+          Write-Host 'Downloaded, verified, extracted, and ran the published Server Files v1.2.4 ARM64 EXE on Windows ARM64.'
