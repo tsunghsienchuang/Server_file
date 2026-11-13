@@ -2069,7 +2069,7 @@ PAGE_STYLE = """
     main.wrap { animation: page-arrive 240ms var(--ease); }
     dialog[open]:not([data-dialog-touched]) { animation: dialog-arrive 165ms var(--ease); }
     .copy-feedback:not([hidden]), .download-progress:not([hidden]) { animation: page-arrive 170ms var(--ease); }
-    [data-success-fading] { opacity: 0; transition: opacity 600ms ease-out; }
+    [data-success-fading] { opacity: 0; transition: opacity var(--success-fade-duration) ease-out; }
     #preview-results[aria-busy="true"] .count::before { animation: search-spin 700ms linear infinite; }
     .refresh-files[data-refreshing] svg { animation: search-spin 850ms linear infinite; }
     .hero form, .hero form button, .home-link, .location a, .entry, .entry-action, .sort-toggle,
@@ -2622,9 +2622,10 @@ function resetSuccessStatus(status) {
     successStatuses.delete(status);
   }
   status.removeAttribute("data-success-fading");
+  status.style.removeProperty("--success-fade-duration");
 }
 
-function scheduleSuccessStatus(status, { delay = 4500, onHide } = {}) {
+function scheduleSuccessStatus(status, { delay = 4500, fadeDuration = 600, onHide } = {}) {
   resetSuccessStatus(status);
   const state = { events: new AbortController() };
   successStatuses.set(status, state);
@@ -2656,8 +2657,9 @@ function scheduleSuccessStatus(status, { delay = 4500, onHide } = {}) {
       hide();
       return;
     }
+    status.style.setProperty("--success-fade-duration", fadeDuration + "ms");
     status.setAttribute("data-success-fading", "");
-    state.timer = window.setTimeout(hide, 600);
+    state.timer = window.setTimeout(hide, fadeDuration);
   }
 
   for (const event of ["pointerenter", "pointerleave", "focusin", "focusout"]) {
@@ -4781,7 +4783,7 @@ UPLOAD_SCRIPT = """
     showBytes(committed, total, !errors.length && !skipped && (files.length > 0 || directories.length > 0));
     if (succeeded || created) {
       document.dispatchEvent(new Event("preview-upload-complete"));
-      if (!errors.length && !skipped) scheduleSuccessStatus(progressBox);
+      if (!errors.length && !skipped) scheduleSuccessStatus(progressBox, { delay: 2500, fadeDuration: 400 });
     }
   }
 

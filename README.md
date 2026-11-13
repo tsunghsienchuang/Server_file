@@ -8,15 +8,15 @@ Server Files runs independently of Codex. The release packages include the launc
 
 [繁體中文快速開始](#繁體中文快速開始) · [Architecture and trust boundaries](docs/architecture.md)
 
-## Download 1.2.3
+## Download 1.2.4
 
 | Platform | Download |
 | --- | --- |
-| macOS 13 or later, Apple silicon and Intel | [macOS Universal ZIP](../../releases/download/v1.2.3/Server-Files-1.2.3-macOS-universal.zip) |
-| Windows 10 22H2 or Windows 11, x64 | [Windows x64 ZIP](../../releases/download/v1.2.3/Server-Files-1.2.3-Windows-x64.zip) |
-| Windows 11, ARM64 | [Windows ARM64 ZIP](../../releases/download/v1.2.3/Server-Files-1.2.3-Windows-arm64.zip) |
+| macOS 13 or later, Apple silicon and Intel | [macOS Universal ZIP](../../releases/download/v1.2.4/Server-Files-1.2.4-macOS-universal.zip) |
+| Windows 10 22H2 or Windows 11, x64 | [Windows x64 ZIP](../../releases/download/v1.2.4/Server-Files-1.2.4-Windows-x64.zip) |
+| Windows 11, ARM64 | [Windows ARM64 ZIP](../../releases/download/v1.2.4/Server-Files-1.2.4-Windows-arm64.zip) |
 
-[SHA256SUMS](../../releases/download/v1.2.3/SHA256SUMS) · [All releases](../../releases)
+[SHA256SUMS](../../releases/download/v1.2.4/SHA256SUMS) · [All releases](../../releases)
 
 The server needs a Unix environment with **Python 3.10+** and OpenSSH that permits local forwarding to Unix sockets. Poppler’s `pdftoppm` is optional for PDF cover previews.
 
@@ -43,14 +43,14 @@ While connected, open **Files** at [127.0.0.1:8878](http://127.0.0.1:8878/) to m
 
 ### Verify a download
 
-Compare the SHA-256 hash of your ZIP with its entry in the release’s [SHA256SUMS](../../releases/download/v1.2.3/SHA256SUMS). From the download folder, use the command for your platform and substitute your ZIP’s filename as needed.
+Compare the SHA-256 hash of your ZIP with its entry in the release’s [SHA256SUMS](../../releases/download/v1.2.4/SHA256SUMS). From the download folder, use the command for your platform and substitute your ZIP’s filename as needed.
 
 ```sh
-shasum -a 256 Server-Files-1.2.3-macOS-universal.zip
+shasum -a 256 Server-Files-1.2.4-macOS-universal.zip
 ```
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\Server-Files-1.2.3-Windows-x64.zip
+Get-FileHash -Algorithm SHA256 .\Server-Files-1.2.4-Windows-x64.zip
 ```
 
 ## What you can do
@@ -80,11 +80,11 @@ Run the server tests with `python3 -m unittest discover -s tests` and the launch
 
 Server Files 可在 macOS 和 Windows 透過 SSH 瀏覽、預覽及管理伺服器檔案。發行包已包含啟動器和預覽程式，可獨立於 Codex 使用，直接用既有的 SSH 帳號登入。伺服器需要 Unix 環境及 **Python 3.10 以上**，OpenSSH 須允許 Unix socket 轉送。若要顯示 PDF 首頁封面，可在伺服器安裝 Poppler 的 `pdftoppm`。
 
-- **macOS 13 以上**（Apple 晶片或 Intel）請下載通用版 ZIP，解壓縮並開啟 **Server Files.app**。如遇 Gatekeeper 阻擋，先確認來源與雜湊值，再依 Apple 說明對此 App 個別核准。[下載 macOS](../../releases/download/v1.2.3/Server-Files-1.2.3-macOS-universal.zip) · [Apple 支援](https://support.apple.com/en-us/102445)
-- **Windows 10 22H2 或 Windows 11** 請下載對應架構，解壓縮並雙擊 **ServerFiles.exe**。ARM64 版適用 Windows 11。若 PowerShell 找不到 `ssh -V`，可從 Windows 的選用功能安裝 **OpenSSH Client**。[下載 x64](../../releases/download/v1.2.3/Server-Files-1.2.3-Windows-x64.zip) · [下載 ARM64](../../releases/download/v1.2.3/Server-Files-1.2.3-Windows-arm64.zip) · [Microsoft 安裝說明](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse?pivots=windows-11&tabs=gui)
+- **macOS 13 以上**（Apple 晶片或 Intel）請下載通用版 ZIP，解壓縮並開啟 **Server Files.app**。如遇 Gatekeeper 阻擋，先確認來源與雜湊值，再依 Apple 說明對此 App 個別核准。[下載 macOS](../../releases/download/v1.2.4/Server-Files-1.2.4-macOS-universal.zip) · [Apple 支援](https://support.apple.com/en-us/102445)
+- **Windows 10 22H2 或 Windows 11** 請下載對應架構，解壓縮並雙擊 **ServerFiles.exe**。ARM64 版適用 Windows 11。若 PowerShell 找不到 `ssh -V`，可從 Windows 的選用功能安裝 **OpenSSH Client**。[下載 x64](../../releases/download/v1.2.4/Server-Files-1.2.4-Windows-x64.zip) · [下載 ARM64](../../releases/download/v1.2.4/Server-Files-1.2.4-Windows-arm64.zip) · [Microsoft 安裝說明](https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse?pivots=windows-11&tabs=gui)
 
 1. 輸入 SSH 主機、帳號、連接埠（預設 `22`）及遠端資料夾。Mac 使用金鑰時可將密碼留空，儲存到鑰匙圈為選填。Windows 由 OpenSSH 使用金鑰或在主控台詢問登入資訊。首次連線若出現主機指紋，先向伺服器管理員核對。
 2. 遠端資料夾留空會開啟 SSH 帳號的主目錄。填入 `/srv/workspace` 或 `~/reports` 這類既有路徑，可將兩個頁面限制在該資料夾。
 3. 連線後，在 [127.0.0.1:8878](http://127.0.0.1:8878/) 管理檔案，在 [127.0.0.1:8877](http://127.0.0.1:8877/) 預覽報告。點「重新整理」可重新向伺服器抓取當前清單。Windows 按 **Ctrl+C** 斷線；Mac 可從選單列中斷連線，或在 Dock 圖示按右鍵選「結束」來關閉 App 並斷線。
 
-可用 macOS 的 `shasum -a 256` 或 Windows PowerShell 的 `Get-FileHash -Algorithm SHA256` 計算 ZIP 的雜湊值，再比對同名檔案的發行紀錄。[SHA256SUMS](../../releases/download/v1.2.3/SHA256SUMS)
+可用 macOS 的 `shasum -a 256` 或 Windows PowerShell 的 `Get-FileHash -Algorithm SHA256` 計算 ZIP 的雜湊值，再比對同名檔案的發行紀錄。[SHA256SUMS](../../releases/download/v1.2.4/SHA256SUMS)
