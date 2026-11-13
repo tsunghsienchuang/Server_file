@@ -278,6 +278,8 @@ UI_TRANSLATIONS = {
     "設定": "Settings",
     "調整預覽大小": "Resize preview",
     "調整編輯視窗大小": "Resize editor",
+    "移動視窗": "Move window",
+    "拖曳移動視窗，雙擊回到中央": "Drag to move. Double-click to center.",
     "請一次執行一個檔案操作": "Run one file operation at a time",
     "請從「伺服器檔案」頁操作": "Run this action from Server Files",
     "請手動複製這個伺服器路徑": "Copy this server path manually",
@@ -569,6 +571,8 @@ UI_TRANSLATIONS = {
     "設定": "設定",
     "調整預覽大小": "プレビューのサイズを調整",
     "調整編輯視窗大小": "エディターのサイズを調整",
+    "移動視窗": "ウィンドウを移動",
+    "拖曳移動視窗，雙擊回到中央": "ドラッグして移動、ダブルクリックで中央に戻す",
     "請一次執行一個檔案操作": "ファイル操作は 1 回に 1 つ実行してください",
     "請從「伺服器檔案」頁操作": "サーバーファイルのページから操作してください",
     "請手動複製這個伺服器路徑": "このサーバー上のパスを手動でコピーしてください",
@@ -860,6 +864,8 @@ UI_TRANSLATIONS = {
     "設定": "설정",
     "調整預覽大小": "미리보기 크기 조절",
     "調整編輯視窗大小": "편집기 크기 조절",
+    "移動視窗": "창 이동",
+    "拖曳移動視窗，雙擊回到中央": "드래그하여 이동하고 두 번 클릭하여 가운데로 되돌리기",
     "請一次執行一個檔案操作": "파일 작업은 한 번에 하나씩 실행하세요",
     "請從「伺服器檔案」頁操作": "서버 파일 페이지에서 실행하세요",
     "請手動複製這個伺服器路徑": "이 서버 경로를 직접 복사하세요",
@@ -1151,6 +1157,8 @@ UI_TRANSLATIONS = {
     "設定": "设置",
     "調整預覽大小": "调整预览大小",
     "調整編輯視窗大小": "调整编辑窗口大小",
+    "移動視窗": "移动窗口",
+    "拖曳移動視窗，雙擊回到中央": "拖动移动窗口，双击回到中央",
     "請一次執行一個檔案操作": "请每次执行一个文件操作",
     "請從「伺服器檔案」頁操作": "请从“服务器文件”页面操作",
     "請手動複製這個伺服器路徑": "请手动复制此服务器路径",
@@ -1931,13 +1939,27 @@ PAGE_STYLE = """
   .download-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .download-progress-row p { min-width: 0; }
   .file-preview {
-    --dialog-inline-gutter: 28px; --dialog-block-gutter: 28px;
-    width: min(var(--dialog-width, 760px), calc(100% - var(--dialog-inline-gutter)));
+    --dialog-inline-gutter: 28px; --dialog-block-gutter: 28px; --dialog-default-width: 760px;
+    width: min(var(--dialog-width, var(--dialog-default-width)), calc(100% - var(--dialog-inline-gutter)));
     max-width: none; max-height: calc(100dvh - var(--dialog-block-gutter)); padding: 16px;
   }
   .file-preview[open][data-resized] { display: grid; height: var(--dialog-height); grid-template-rows: auto minmax(0, 1fr) auto; }
   .preview-titlebar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 12px; }
   .preview-titlebar h2 { overflow-wrap: anywhere; }
+  :is(.file-preview, .file-editor)[data-positioned] {
+    --dialog-inline-edge: calc(var(--dialog-inline-gutter) / 2);
+    --dialog-block-edge: calc(var(--dialog-block-gutter) / 2);
+    position: fixed; right: auto; bottom: auto; margin: 0;
+    left: clamp(var(--dialog-inline-edge), var(--dialog-left),
+      calc(100% - min(var(--dialog-width, var(--dialog-default-width)), calc(100% - var(--dialog-inline-gutter))) - var(--dialog-inline-edge)));
+    top: clamp(var(--dialog-block-edge), var(--dialog-top),
+      calc(100dvh - min(var(--dialog-height, var(--dialog-natural-height, 0px)), calc(100dvh - var(--dialog-block-gutter))) - var(--dialog-block-edge)));
+  }
+  [data-dialog-move] { cursor: grab; touch-action: none; }
+  [data-dialog-move] .editor-path { cursor: text; }
+  [data-dialog-move]:focus-visible { outline: 2px solid var(--theme-focus); outline-offset: -2px; }
+  .dialog-moving [data-dialog-move] { cursor: grabbing; }
+  :is(.file-preview, .file-editor)[data-dialog-touched] { animation: none; }
   .preview-close { flex: 0 0 32px; font-size: 19px; }
   .preview-content { min-height: 90px; max-height: 60vh; overflow: auto; border: 1px solid #dce4ef; border-radius: 8px; background: #f7f9fc; }
   .preview-content img { display: block; max-width: 100%; max-height: 55vh; margin: auto; object-fit: contain; }
@@ -1959,8 +1981,8 @@ PAGE_STYLE = """
   .file-preview[data-resized] .preview-content { min-height: 0; max-height: none; }
   .file-preview[data-resized] .preview-content iframe { height: 100%; }
   .file-preview[data-resized] .preview-content img { max-height: 100%; }
-  .dialog-resizing { user-select: none; }
-  .dialog-resizing :is(.preview-content, .editor-buffer) { pointer-events: none; }
+  .dialog-resizing, .dialog-moving { user-select: none; }
+  :is(.dialog-resizing, .dialog-moving) :is(.preview-content, .editor-buffer) { pointer-events: none; }
   .dialog-resize {
     position: absolute; inset-inline-end: 4px; inset-block-end: 4px;
     display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0;
@@ -1970,9 +1992,10 @@ PAGE_STYLE = """
   .dialog-resize:hover, .dialog-resize:focus-visible { color: var(--theme-text); background: var(--theme-hover); }
   .dialog-resize:focus-visible { outline-offset: -2px; }
   .file-editor {
-    --dialog-inline-gutter: 28px; --dialog-block-gutter: 24px;
+    --dialog-inline-gutter: 28px; --dialog-block-gutter: 24px; --dialog-default-width: 1060px;
     --editor-default-height: min(80dvh, 780px);
-    width: min(var(--dialog-width, 1060px), calc(100% - var(--dialog-inline-gutter)));
+    --dialog-natural-height: var(--editor-default-height);
+    width: min(var(--dialog-width, var(--dialog-default-width)), calc(100% - var(--dialog-inline-gutter)));
     height: var(--dialog-height, var(--editor-default-height));
     max-width: none; max-height: calc(100dvh - var(--dialog-block-gutter));
     padding: 0; overflow: hidden; border: 1px solid #48484a; background: #1e1e1e; color: #e2e2e2;
@@ -2014,7 +2037,7 @@ PAGE_STYLE = """
     @keyframes dialog-arrive { from { opacity: .6; transform: translateY(6px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @keyframes search-spin { to { transform: rotate(360deg); } }
     main.wrap { animation: page-arrive 240ms var(--ease); }
-    dialog[open] { animation: dialog-arrive 165ms var(--ease); }
+    dialog[open]:not([data-dialog-touched]) { animation: dialog-arrive 165ms var(--ease); }
     .copy-feedback:not([hidden]), .download-progress:not([hidden]) { animation: page-arrive 170ms var(--ease); }
     [data-success-fading] { opacity: 0; transition: opacity 600ms ease-out; }
     #preview-results[aria-busy="true"] .count::before { animation: search-spin 700ms linear infinite; }
@@ -2915,7 +2938,7 @@ PREVIEW_SCRIPT = r"""
       highlight();
       updateSaveButton();
       setMessage("正在讀取檔案…");
-      dialog.showModal();
+      showFileDialog(dialog);
       try {
         const data = await editorRequest(endpoint(url, "edit"), {
           signal: controller.signal, headers: { "X-Preview-Token": token },
@@ -3270,7 +3293,7 @@ PREVIEW_SCRIPT = r"""
     const message = document.createElement("p");
     message.textContent = "讀取預覽中…";
     previewContent.replaceChildren(message);
-    previewDialog.showModal();
+    showFileDialog(previewDialog);
     previewRequest?.abort();
     const controller = new AbortController();
     previewRequest = controller;
@@ -3350,13 +3373,24 @@ PREVIEW_SCRIPT = r"""
 
   document.getElementById("preview-close").addEventListener("click", () => previewDialog.close());
 
-  function enableDialogResize(dialog) {
+  const fileDialogLayouts = new WeakMap();
+
+  function showFileDialog(dialog) {
+    dialog.showModal();
+    fileDialogLayouts.get(dialog)?.();
+  }
+
+  function enableDialogLayout(dialog) {
     const handle = dialog.querySelector(".dialog-resize");
-    const storageKey = "server-files-dialog-size:" + dialog.id;
+    const titlebar = dialog.querySelector("[data-dialog-move]");
+    const sizeKey = "server-files-dialog-size:" + dialog.id;
+    const positionKey = "server-files-dialog-position:" + dialog.id;
     const minWidth = 320, minHeight = 220;
+    const arrows = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
     let preferredSize = null;
+    let preferredPosition = null;
     let start = null;
-    let syncAfterDrag = false;
+    let syncSize = false, syncPosition = false;
 
     function applySize(size) {
       preferredSize = size;
@@ -3370,30 +3404,66 @@ PREVIEW_SCRIPT = r"""
         dialog.style.removeProperty("--dialog-width");
         dialog.style.removeProperty("--dialog-height");
       }
+      placeDialog();
     }
 
-    function restoreSize() {
+    function restorePreference(key, first, second, minFirst, minSecond, apply) {
       let raw, saved;
-      try { raw = localStorage.getItem(storageKey); } catch { return; }
+      try { raw = localStorage.getItem(key); } catch { return; }
       try { saved = JSON.parse(raw); } catch {}
-      const valid = Number.isSafeInteger(saved?.width) && saved.width >= minWidth &&
-                    Number.isSafeInteger(saved?.height) && saved.height >= minHeight;
-      applySize(valid ? { width: saved.width, height: saved.height } : null);
+      const valid = Number.isSafeInteger(saved?.[first]) && saved[first] >= minFirst &&
+                    Number.isSafeInteger(saved?.[second]) && saved[second] >= minSecond;
+      apply(valid ? { [first]: saved[first], [second]: saved[second] } : null);
     }
 
-    function persistSize() {
+    function restoreSize() { restorePreference(sizeKey, "width", "height", minWidth, minHeight, applySize); }
+    function restorePosition() { restorePreference(positionKey, "left", "top", 0, 0, applyPosition); }
+
+    function persist(key, preference) {
       try {
-        if (preferredSize) localStorage.setItem(storageKey, JSON.stringify(preferredSize));
-        else localStorage.removeItem(storageKey);
+        if (preference) localStorage.setItem(key, JSON.stringify(preference));
+        else localStorage.removeItem(key);
       } catch {}
     }
 
-    function resizeFrom(initial, dx, dy) {
+    function viewport() {
       const style = getComputedStyle(dialog);
       const inlineGutter = parseFloat(style.getPropertyValue("--dialog-inline-gutter"));
       const blockGutter = parseFloat(style.getPropertyValue("--dialog-block-gutter"));
-      const maxWidth = Math.max(1, document.documentElement.clientWidth - inlineGutter);
-      const maxHeight = Math.max(1, Math.floor(parseFloat(style.maxHeight) || window.innerHeight - blockGutter));
+      return {
+        width: document.documentElement.clientWidth,
+        height: Math.floor(parseFloat(style.maxHeight) + blockGutter || window.innerHeight),
+        inlineMargin: Math.floor(inlineGutter / 2),
+        blockMargin: Math.floor(blockGutter / 2),
+      };
+    }
+
+    function placeDialog() {
+      if (dialog === previewDialog && dialog.open && preferredPosition && !preferredSize) {
+        dialog.style.setProperty("--dialog-natural-height", dialog.offsetHeight + "px");
+      }
+    }
+
+    function applyPosition(position) {
+      preferredPosition = position;
+      if (position) {
+        dialog.style.setProperty("--dialog-left", position.left + "px");
+        dialog.style.setProperty("--dialog-top", position.top + "px");
+        dialog.dataset.positioned = "";
+        placeDialog();
+      } else {
+        delete dialog.dataset.positioned;
+        dialog.style.removeProperty("--dialog-left");
+        dialog.style.removeProperty("--dialog-top");
+      }
+    }
+
+    function resizeFrom(initial, dx, dy) {
+      const view = viewport();
+      const rightInset = initial.positioned ? initial.left + view.inlineMargin : 2 * view.inlineMargin;
+      const bottomInset = initial.positioned ? initial.top + view.blockMargin : 2 * view.blockMargin;
+      const maxWidth = Math.max(1, view.width - rightInset);
+      const maxHeight = Math.max(1, view.height - bottomInset);
       const width = dx ? Math.min(maxWidth, Math.max(minWidth, Math.round(initial.width + dx))) : initial.width;
       const height = dy ? Math.min(maxHeight, Math.max(minHeight, Math.round(initial.height + dy))) : initial.height;
       if (width === initial.width && height === initial.height) {
@@ -3407,65 +3477,119 @@ PREVIEW_SCRIPT = r"""
       return true;
     }
 
-    function resetSize() {
-      applySize(null);
-      persistSize();
+    function moveFrom(initial, dx, dy) {
+      const view = viewport();
+      const maxLeft = Math.max(view.inlineMargin, view.width - initial.width - view.inlineMargin);
+      const maxTop = Math.max(view.blockMargin, view.height - initial.height - view.blockMargin);
+      const left = dx ? Math.min(maxLeft, Math.max(view.inlineMargin, Math.round(initial.left + dx))) : initial.left;
+      const top = dy ? Math.min(maxTop, Math.max(view.blockMargin, Math.round(initial.top + dy))) : initial.top;
+      if (left === initial.left && top === initial.top) {
+        applyPosition(initial.preferred);
+        return false;
+      }
+      applyPosition({
+        left: left === initial.left && initial.preferred ? initial.preferred.left : left,
+        top: top === initial.top && initial.preferred ? initial.preferred.top : top,
+      });
+      return true;
     }
 
-    function stopResize(commit) {
+    function stopDrag(commit) {
       const drag = start;
       if (!drag) return;
       start = null;
-      dialog.classList.remove("dialog-resizing");
-      if (handle.hasPointerCapture(drag.id)) handle.releasePointerCapture(drag.id);
-      if (commit && preferredSize !== drag.preferred) persistSize();
-      else if (syncAfterDrag) restoreSize();
-      else if (!commit) applySize(drag.preferred);
-      syncAfterDrag = false;
+      dialog.classList.remove("dialog-resizing", "dialog-moving");
+      if (drag.surface.hasPointerCapture(drag.id)) drag.surface.releasePointerCapture(drag.id);
+      if (drag.surface === handle) {
+        if (commit && preferredSize !== drag.preferred) persist(sizeKey, preferredSize);
+        else if (syncSize) restoreSize();
+        else if (!commit) applySize(drag.preferred);
+        if (syncPosition) restorePosition();
+      } else {
+        if (commit && preferredPosition !== drag.preferred) persist(positionKey, preferredPosition);
+        else if (syncPosition) restorePosition();
+        else if (!commit) applyPosition(drag.preferred);
+        if (syncSize) restoreSize();
+      }
+      syncSize = syncPosition = false;
     }
 
-    handle.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0 || !event.isPrimary || start) return;
-      start = { id: event.pointerId, x: event.clientX, y: event.clientY,
-                width: dialog.offsetWidth, height: dialog.offsetHeight, preferred: preferredSize };
-      handle.setPointerCapture(event.pointerId);
-      dialog.classList.add("dialog-resizing");
-    });
-    handle.addEventListener("pointermove", (event) => {
-      if (!start || event.pointerId !== start.id) return;
-      // The dialog stays centered, so one pixel at the corner changes the size by two.
-      resizeFrom(start, 2 * (event.clientX - start.x), 2 * (event.clientY - start.y));
-    });
-    handle.addEventListener("pointerup", (event) => {
-      if (event.pointerId === start?.id) stopResize(true);
-    });
-    handle.addEventListener("lostpointercapture", () => stopResize(false));
-    handle.addEventListener("dblclick", resetSize);
-    handle.addEventListener("keydown", (event) => {
-      if (start) return;
-      if (event.key === "Home") {
-        event.preventDefault();
-        resetSize();
-        return;
+    function initialGeometry(preferred) {
+      dialog.dataset.dialogTouched = "";
+      const { left, top } = dialog.getBoundingClientRect();
+      return { left: Math.round(left), top: Math.round(top), width: dialog.offsetWidth, height: dialog.offsetHeight,
+               preferred, positioned: Boolean(preferredPosition) };
+    }
+
+    function bindControl(surface, stateClass, update, apply, key, getPreference, skipTarget, resize = false) {
+      function reset() {
+        apply(null);
+        persist(key, null);
       }
-      const direction = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key];
-      if (!direction) return;
-      event.preventDefault();
-      const initial = { width: dialog.offsetWidth, height: dialog.offsetHeight, preferred: preferredSize };
-      if (resizeFrom(initial, direction[0] * 24, direction[1] * 24)) persistSize();
+      surface.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || !event.isPrimary || start || skipTarget(event.target)) return;
+        start = { ...initialGeometry(getPreference()), surface, id: event.pointerId, x: event.clientX, y: event.clientY };
+        surface.setPointerCapture(event.pointerId);
+        dialog.classList.add(stateClass);
+      });
+      surface.addEventListener("pointermove", (event) => {
+        if (!start || event.pointerId !== start.id) return;
+        // A centered dialog grows in both directions. A moved dialog keeps its upper-left corner.
+        const scale = resize && !start.positioned ? 2 : 1;
+        update(start, scale * (event.clientX - start.x), scale * (event.clientY - start.y));
+      });
+      surface.addEventListener("pointerup", (event) => {
+        if (event.pointerId === start?.id) stopDrag(true);
+      });
+      surface.addEventListener("pointercancel", (event) => {
+        if (event.pointerId === start?.id) stopDrag(false);
+      });
+      surface.addEventListener("lostpointercapture", (event) => {
+        if (start?.surface === surface && start.id === event.pointerId) stopDrag(true);
+      });
+      surface.addEventListener("dblclick", (event) => { if (!skipTarget(event.target)) reset(); });
+      surface.addEventListener("keydown", (event) => {
+        if (start || event.target !== surface) return;
+        if (event.key === "Home") {
+          event.preventDefault();
+          reset();
+          return;
+        }
+        const direction = arrows[event.key];
+        if (!direction) return;
+        event.preventDefault();
+        if (update(initialGeometry(getPreference()), direction[0] * 24, direction[1] * 24)) persist(key, getPreference());
+      });
+    }
+
+    bindControl(handle, "dialog-resizing", resizeFrom, applySize, sizeKey, () => preferredSize, () => false, true);
+    bindControl(titlebar, "dialog-moving", moveFrom, applyPosition, positionKey, () => preferredPosition,
+                target => target.closest("button, a, input, select, textarea, .editor-path"));
+    fileDialogLayouts.set(dialog, placeDialog);
+    new ResizeObserver(placeDialog).observe(dialog);
+    dialog.addEventListener("close", () => {
+      if (dialog.open) return;
+      stopDrag(false);
+      delete dialog.dataset.dialogTouched;
     });
-    dialog.addEventListener("close", () => { if (!dialog.open) stopResize(false); });
     window.addEventListener("storage", (event) => {
-      if (event.key !== null && event.key !== storageKey) return;
+      if (event.key !== null && event.key !== sizeKey && event.key !== positionKey) return;
       try { if (event.storageArea !== localStorage) return; } catch { return; }
-      if (start) syncAfterDrag = true;
-      else restoreSize();
+      if (event.key === null || event.key === sizeKey) {
+        if (start) syncSize = true;
+        else restoreSize();
+      }
+      if (event.key === null || event.key === positionKey) {
+        if (start) syncPosition = true;
+        else restorePosition();
+      }
     });
     restoreSize();
+    restorePosition();
   }
 
-  enableDialogResize(previewDialog);
-  if (editor) enableDialogResize(editor);
+  enableDialogLayout(previewDialog);
+  if (editor) enableDialogLayout(editor);
   previewDialog.addEventListener("close", () => {
     if (previewDialog.open) return;
     previewRequest?.abort();
@@ -5256,9 +5380,14 @@ DIALOG_RESIZE_CONTROL = """
  stroke-linecap="round" aria-hidden="true"><path d="M3 13 13 3m-6 10 6-6m-2 6 2-2"/></svg></button>
 """
 
+DIALOG_MOVE_ATTRIBUTES = (
+    'data-dialog-move tabindex="0" role="group" aria-label="移動視窗" '
+    'aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home" title="拖曳移動視窗，雙擊回到中央"'
+)
+
 FILE_PREVIEW_HTML = """
 <dialog id="file-preview" class="file-preview" aria-labelledby="preview-title">
-<div class="preview-titlebar"><h2 id="preview-title">檔案預覽</h2>
+<div class="preview-titlebar" """ + DIALOG_MOVE_ATTRIBUTES + """><h2 id="preview-title">檔案預覽</h2>
 <button type="button" id="preview-close" class="entry-action preview-close" aria-label="關閉預覽" autofocus>×</button></div>
 <div id="preview-content" class="preview-content"></div>
 <div class="preview-footer"><a id="preview-open" target="_blank" rel="noopener">開啟完整檔案</a>
@@ -5267,7 +5396,7 @@ FILE_PREVIEW_HTML = """
 
 EDITOR_HTML = """
 <dialog id="file-editor" class="file-editor" aria-labelledby="editor-title" aria-describedby="editor-path">
-<div class="editor-header"><h2 id="editor-title">編輯檔案</h2><p id="editor-path" class="editor-path"></p></div>
+<div class="editor-header" """ + DIALOG_MOVE_ATTRIBUTES + """><h2 id="editor-title">編輯檔案</h2><p id="editor-path" class="editor-path"></p></div>
 <div class="editor-buffer">
 <pre id="editor-highlight" class="editor-highlight" aria-hidden="true"><code id="editor-code"></code></pre>
 <textarea id="editor-content" class="editor-content" aria-label="檔案內容" wrap="off" spellcheck="false"

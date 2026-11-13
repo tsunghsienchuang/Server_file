@@ -389,8 +389,12 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
     }
 
     private func createLoginWindow() -> NSWindow {
+        let windowWidth: CGFloat = 516
+        let horizontalPadding: CGFloat = 26
+        let topPadding: CGFloat = 22
+        let bottomPadding: CGFloat = 22
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 526, height: 485),
+            contentRect: NSRect(x: 0, y: 0, width: windowWidth, height: 540),
             styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false
         )
         window.title = appName
@@ -400,12 +404,13 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         let logo = NSImageView(image: NSApp.applicationIconImage)
         logo.imageScaling = .scaleProportionallyUpOrDown
         logo.translatesAutoresizingMaskIntoConstraints = false
-        logo.widthAnchor.constraint(equalToConstant: 55).isActive = true
-        logo.heightAnchor.constraint(equalToConstant: 55).isActive = true
+        logo.widthAnchor.constraint(equalToConstant: 52).isActive = true
+        logo.heightAnchor.constraint(equalToConstant: 52).isActive = true
         logo.setAccessibilityElement(false)
         let heading = NSTextField(labelWithString: "連線到伺服器")
-        heading.font = .systemFont(ofSize: 23, weight: .semibold)
-        let subtitle = NSTextField(labelWithString: "瀏覽、預覽和編輯遠端檔案")
+        heading.font = .systemFont(ofSize: 24, weight: .semibold)
+        let subtitle = NSTextField(labelWithString: "透過 SSH 瀏覽、預覽和編輯遠端檔案")
+        subtitle.font = .systemFont(ofSize: 12)
         subtitle.textColor = .secondaryLabelColor
         let titleStack = NSStackView(views: [heading, subtitle])
         titleStack.orientation = .vertical
@@ -413,36 +418,35 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         titleStack.spacing = 3
         let header = NSStackView(views: [logo, titleStack])
         header.alignment = .centerY
-        header.spacing = 11
+        header.spacing = 12
 
         recentMenu.setAccessibilityLabel("最近使用的連線")
+        recentMenu.controlSize = .large
+        recentMenu.cell?.lineBreakMode = .byTruncatingMiddle
         recentMenu.target = self
         recentMenu.action = #selector(selectRecentConnection)
         forgetButton.target = self
         forgetButton.action = #selector(forgetConnection)
         forgetButton.bezelStyle = .rounded
-        let recent = NSStackView(views: [recentMenu, forgetButton])
-        recent.alignment = .centerY
-        recent.spacing = 8
+        forgetButton.controlSize = .large
         forgetButton.setContentHuggingPriority(.required, for: .horizontal)
-        recentMenu.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        recentMenu.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        forgetButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        let recent = labeledControl("最近使用的連線", loginPair(recentMenu, forgetButton))
 
         hostField.placeholderString = "server.example.com"
         portField.placeholderString = "22"
+        portField.alignment = .center
         usernameField.placeholderString = "SSH 帳號"
-        directoryField.placeholderString = "留空使用主目錄，或輸入 /path 或 ~/path"
+        directoryField.placeholderString = "留空使用主目錄"
+        directoryField.setAccessibilityHelp("可輸入以 / 或 ~/ 開頭的遠端路徑。")
         for field in [hostField, portField, usernameField, directoryField] {
             field.delegate = self
-            field.usesSingleLineMode = true
+            styleLoginField(field)
         }
         let hostGroup = labeledField("主機", hostField)
         let portGroup = labeledField("連接埠", portField)
-        portGroup.widthAnchor.constraint(equalToConstant: 91).isActive = true
-        let address = NSStackView(views: [hostGroup, portGroup])
-        address.alignment = .top
-        address.spacing = 12
-        hostGroup.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        portGroup.widthAnchor.constraint(equalToConstant: 94).isActive = true
+        let address = loginPair(hostGroup, portGroup, spacing: 12)
         let usernameGroup = labeledField("帳號", usernameField)
         let directoryGroup = labeledField("遠端目錄（選填）", directoryField)
         let passwordGroup = makePasswordGroup()
@@ -451,21 +455,36 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         loginStatus.textColor = .secondaryLabelColor
         loginStatus.maximumNumberOfLines = 3
         loginStatus.lineBreakMode = .byTruncatingTail
+        loginStatus.preferredMaxLayoutWidth = windowWidth - horizontalPadding * 2 - 24
+        loginStatus.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         connectionProgress.style = .spinning
         connectionProgress.controlSize = .small
         connectionProgress.isDisplayedWhenStopped = false
         connectionProgress.setAccessibilityLabel("正在連線")
         connectionProgress.widthAnchor.constraint(equalToConstant: 16).isActive = true
         connectionProgress.heightAnchor.constraint(equalToConstant: 16).isActive = true
-        let statusRow = NSStackView(views: [connectionProgress, loginStatus])
-        statusRow.alignment = .centerY
-        statusRow.spacing = 8
+        // Keep an inset for the spinner so status messages stay aligned when it stops.
+        let statusRow = NSView()
+        for view in [connectionProgress, loginStatus] {
+            view.translatesAutoresizingMaskIntoConstraints = false
+            statusRow.addSubview(view)
+        }
+        NSLayoutConstraint.activate([
+            connectionProgress.topAnchor.constraint(equalTo: statusRow.topAnchor),
+            connectionProgress.leadingAnchor.constraint(equalTo: statusRow.leadingAnchor),
+            loginStatus.topAnchor.constraint(equalTo: statusRow.topAnchor),
+            loginStatus.leadingAnchor.constraint(equalTo: connectionProgress.trailingAnchor, constant: 8),
+            loginStatus.trailingAnchor.constraint(equalTo: statusRow.trailingAnchor),
+            loginStatus.bottomAnchor.constraint(lessThanOrEqualTo: statusRow.bottomAnchor),
+            statusRow.heightAnchor.constraint(equalToConstant: 45),
+        ])
 
         loginButton.target = self
         loginButton.action = #selector(beginLogin)
         loginButton.bezelStyle = .rounded
         loginButton.controlSize = .large
         loginButton.keyEquivalent = "\r"
+        loginButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 110).isActive = true
         let cancel = NSButton(title: "取消", target: self, action: #selector(cancelLogin))
         cancel.bezelStyle = .rounded
         cancel.controlSize = .large
@@ -475,32 +494,70 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         buttons.translatesAutoresizingMaskIntoConstraints = false
         let buttonRow = NSView()
         buttonRow.addSubview(buttons)
+        let separator = NSBox()
+        separator.boxType = .separator
 
         let stack = NSStackView(views: [header, recent, address, usernameGroup, directoryGroup, passwordGroup,
-                                       rememberPassword, statusRow, buttonRow])
+                                       rememberPassword, separator, statusRow, buttonRow])
         stack.orientation = .vertical
         stack.alignment = .leading
-        stack.spacing = 10
-        stack.setCustomSpacing(18, after: header)
-        stack.setCustomSpacing(14, after: recent)
-        stack.setCustomSpacing(14, after: rememberPassword)
+        stack.spacing = 11
+        stack.setCustomSpacing(17, after: header)
+        stack.setCustomSpacing(15, after: recent)
+        stack.setCustomSpacing(13, after: rememberPassword)
+        stack.setCustomSpacing(8, after: separator)
         stack.translatesAutoresizingMaskIntoConstraints = false
         let content = NSView()
         window.contentView = content
         content.addSubview(stack)
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: content.topAnchor, constant: 20),
-            stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 24),
-            stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -24),
-            stack.bottomAnchor.constraint(lessThanOrEqualTo: content.bottomAnchor, constant: -16),
+            stack.topAnchor.constraint(equalTo: content.topAnchor, constant: topPadding),
+            stack.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: horizontalPadding),
+            stack.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -horizontalPadding),
             buttons.topAnchor.constraint(equalTo: buttonRow.topAnchor),
             buttons.trailingAnchor.constraint(equalTo: buttonRow.trailingAnchor),
             buttons.bottomAnchor.constraint(equalTo: buttonRow.bottomAnchor),
-        ] + [recent, address, usernameGroup, directoryGroup, passwordGroup, statusRow, buttonRow].map {
+        ] + [recent, address, usernameGroup, directoryGroup, passwordGroup, separator, statusRow, buttonRow].map {
             $0.widthAnchor.constraint(equalTo: stack.widthAnchor)
         })
+        content.layoutSubtreeIfNeeded()
+        window.setContentSize(NSSize(width: windowWidth, height: ceil(stack.fittingSize.height) + topPadding + bottomPadding))
+        let tabOrder = [hostField, portField, usernameField, directoryField, passwordField, revealedPasswordField,
+                        passwordVisibilityButton, rememberPassword, cancel, loginButton, recentMenu, forgetButton]
+        for (current, next) in zip(tabOrder, tabOrder.dropFirst()) { current.nextKeyView = next }
+        forgetButton.nextKeyView = hostField
+        window.autorecalculatesKeyViewLoop = false
+        window.initialFirstResponder = hostField
         window.center()
         return window
+    }
+
+    private func styleLoginField(_ field: NSTextField) {
+        field.usesSingleLineMode = true
+        field.controlSize = .large
+        field.font = .systemFont(ofSize: 14)
+    }
+
+    private func loginPair(_ primary: NSView, _ trailing: NSView, spacing: CGFloat = 8) -> NSView {
+        let row = NSView()
+        primary.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        primary.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        for view in [primary, trailing] {
+            view.translatesAutoresizingMaskIntoConstraints = false
+            row.addSubview(view)
+        }
+        // Explicit edge constraints give the primary control all width left by the trailing control.
+        NSLayoutConstraint.activate([
+            primary.leadingAnchor.constraint(equalTo: row.leadingAnchor),
+            primary.trailingAnchor.constraint(equalTo: trailing.leadingAnchor, constant: -spacing),
+            primary.topAnchor.constraint(equalTo: row.topAnchor),
+            primary.bottomAnchor.constraint(equalTo: row.bottomAnchor),
+            trailing.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            trailing.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+            trailing.topAnchor.constraint(greaterThanOrEqualTo: row.topAnchor),
+            trailing.bottomAnchor.constraint(lessThanOrEqualTo: row.bottomAnchor),
+        ])
+        return row
     }
 
     private func labeledField(_ title: String, _ field: NSTextField) -> NSStackView {
@@ -511,7 +568,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
     private func labeledControl(_ title: String, _ control: NSView) -> NSStackView {
         let label = NSTextField(labelWithString: title)
         label.font = .systemFont(ofSize: 12, weight: .semibold)
-        label.textColor = .secondaryLabelColor
+        label.textColor = .labelColor
         let group = NSStackView(views: [label, control])
         group.orientation = .vertical
         group.alignment = .leading
@@ -523,7 +580,7 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
     private func makePasswordGroup() -> NSStackView {
         let fields = NSView()
         for field in [passwordField, revealedPasswordField] {
-            field.usesSingleLineMode = true
+            styleLoginField(field)
             field.setAccessibilityLabel("密碼")
             field.translatesAutoresizingMaskIntoConstraints = false
             field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
@@ -538,12 +595,10 @@ final class ServerFiles: NSObject, NSApplicationDelegate, NSWindowDelegate, NSTe
         passwordVisibilityButton.target = self
         passwordVisibilityButton.action = #selector(togglePasswordVisibility)
         passwordVisibilityButton.bezelStyle = .rounded
-        passwordVisibilityButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 32).isActive = true
-        let row = NSStackView(views: [fields, passwordVisibilityButton])
-        row.alignment = .centerY
-        row.spacing = 6
+        passwordVisibilityButton.controlSize = .large
+        passwordVisibilityButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 40).isActive = true
         setPasswordVisibility(false)
-        return labeledControl("密碼", row)
+        return labeledControl("密碼", loginPair(fields, passwordVisibilityButton))
     }
 
     private var activePasswordField: NSTextField {
